@@ -1,0 +1,342 @@
+-- Set nvim options
+vim.diagnostic.config({ update_in_insert = true })
+vim.g.have_nerd_font = true
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+vim.o.clipboard = "unnamedplus" -- use system clipboard
+vim.o.confirm = true
+vim.o.cursorline = true
+vim.o.mouse = "a"           -- enable mouse in all modes
+vim.o.mousemoveevent = true -- enable mouse move events
+vim.o.number = true
+vim.o.relativenumber = true
+vim.o.signcolumn = "yes"
+vim.o.swapfile = false
+vim.o.tabstop = 2
+vim.o.termguicolors = true
+vim.o.timeoutlen = 300 -- reduce timeout during keypresses
+vim.o.undofile = true
+vim.o.winborder = "rounded"
+vim.opt.completeopt = { "menuone", "noselect", "popup" }
+
+-- Set keymaps
+vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
+vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
+vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
+vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
+vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>") -- Escape highlight with <esc>
+vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list" })
+vim.keymap.set("n", "<leader>fc", vim.lsp.buf.format)
+vim.keymap.set("n", "<leader>o", ":update<CR> :source<CR>")
+vim.keymap.set("n", "<leader>q", ":bdelete<CR>")
+-- vim.keymap.set("n", "<leader>qq", ":quit<CR>")
+vim.keymap.set("n", "<leader>w", ":write<CR>")
+vim.keymap.set("v", "<A-h>", "<gv", { desc = "Move line(s) to the left" })
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down" })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up" })
+vim.keymap.set("v", "<A-l>", ">gv", { desc = "Move line(s) to the right" })
+
+-- Highlight when yanking text
+vim.api.nvim_create_autocmd("TextYankPost", {
+	desc = "Highlight when yanking (copying) text",
+	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
+	callback = function()
+		vim.hl.on_yank()
+	end,
+})
+
+-- Add plugins via vim.pack (nvim 0.12+)
+vim.pack.add({
+	{ src = "https://github.com/akinsho/bufferline.nvim.git" }, -- custom bufferline
+	{ src = "https://github.com/akinsho/toggleterm.nvim.git" }, -- enables scooter and terminal function
+	{ src = "https://github.com/catppuccin/nvim.git" },        -- fav theme
+	{ src = "https://github.com/gbprod/substitute.nvim.git" }, -- substitute commands
+	{ src = "https://github.com/kdheepak/lazygit.nvim.git" },  -- enables lazygit
+	{ src = "https://github.com/kylechui/nvim-surround.git" }, -- surround add, delete and replace
+	{ src = "https://github.com/mikavilpas/yazi.nvim" },       -- enables yazi file manager
+	{ src = "https://github.com/neovim/nvim-lspconfig" },      -- default config for lsp's
+	{ src = "https://github.com/numToStr/Comment.nvim.git" },  -- enables comment function
+	{ src = "https://github.com/nvim-lua/plenary.nvim" },      -- dependency for yazi
+	{ src = "https://github.com/nvim-telescope/telescope.nvim.git" }, -- fuzzy file, grep and buffer search
+	{ src = "https://github.com/nvim-tree/nvim-web-devicons.git" }, -- dependency for bufferline
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter",  version = "main" },
+	{ src = "https://github.com/pandalec/gradle.nvim" },       -- my gradle plugin :)
+	{ src = "https://github.com/rmagatti/auto-session.git" },  -- auto save and restore sessions
+	{ src = "https://github.com/sQVe/sort.nvim.git" },         -- sorting plugin
+	{ src = "https://github.com/sschleemilch/slimline.nvim.git" }, -- slim statusline
+	{ src = "https://github.com/stevearc/conform.nvim.git" },  -- add format
+	{ src = "https://github.com/windwp/nvim-autopairs" },      -- autopairs for chars
+})
+
+-- Enable lsp
+vim.lsp.enable({
+	"ansiblels",
+	"bashls",
+	"fish_lsp",
+	-- "groovyls",
+	"html",
+	"jsonls",
+	"kotlin_language_server",
+	"lua_ls",
+	"marksman",
+	"rust_analyzer",
+	"taplo",
+	"yamlls",
+})
+
+-- Enable auto completion
+vim.lsp.config("*", {
+	on_attach = function(client, bufnr)
+		vim.lsp.completion.enable(true, client.id, bufnr, {
+			autotrigger = true,
+			convert = function(item)
+				return { abbr = item.label:gsub("%b()", "") }
+			end,
+		})
+		vim.keymap.set("i", "<c-space>", function()
+			vim.lsp.completion.get()
+		end)
+	end,
+})
+
+-- Enable ansible lsp for yml files -- not needed anymore?
+vim.filetype.add({
+	extension = {
+		yml = "yaml.ansible",
+	},
+})
+
+-- Configure lua_ls that it wont show vim errors
+vim.lsp.config("lua_ls", {
+	settings = {
+		Lua = {
+			diagnostics = {
+				globals = { "vim" },
+			},
+		},
+	},
+})
+
+-- Configure formatter
+require("conform").setup({
+	formatters_by_ft = {
+		-- groovy = { "npm-groovy-lint" },
+		kotlin = { "ktlint" },
+		lua = { "stylua" },
+		markdown = { "prettierd", "prettier", stop_after_first = true },
+		-- yaml = { "ansible-lint", "prettierd", "prettier", stop_after_first = true },
+		yaml = { "prettierd", "prettier", "ansible-lint", stop_after_first = true },
+	},
+	format_on_save = {
+		-- These options will be passed to conform.format()
+		-- timeout_ms = 500, -- Doesn't work for ansible-lint
+		timeout_ms = 1500, -- Doesn't work for ansible-lint
+		lsp_format = "fallback",
+	},
+})
+
+-- Setup slimline
+require("slimline").setup({
+	style = "fg",
+	bold = true,
+	hl = {
+		secondary = "Comment",
+	},
+	configs = {
+		mode = {
+			verbose = true,
+			hl = {
+				normal = "Type",
+				visual = "Keyword",
+				insert = "Function",
+				replace = "Statement",
+				command = "String",
+				other = "Function",
+			},
+		},
+		path = {
+			hl = {
+				primary = "Label",
+			},
+		},
+		git = {
+			hl = {
+				primary = "Function",
+			},
+		},
+		filetype_lsp = {
+			hl = {
+				primary = "String",
+			},
+		},
+	},
+})
+
+-- Setup bufferline
+require("bufferline").setup({
+	options = {
+		style_preset = {
+			require("bufferline").style_preset.no_italic,
+		},
+		indicator = {
+			style = "none",
+		},
+		diagnostics = "nvim_lsp",
+		diagnostics_indicator = function(count, level, diagnostics_dict, context)
+			local s = ""
+			for e, n in pairs(diagnostics_dict) do
+				local sym = e == "error" and "" or (e == "warning" and "" or "")
+				s = s .. n .. sym
+			end
+			return s
+		end,
+		show_tab_indicators = false,
+		middle_mouse_command = "bdelete! %d",
+		separator_style = { "", "" },
+		right_mouse_command = "vertical sbuffer %d",
+		persist_buffer_sort = true,
+		hover = {
+			enabled = true,
+			delay = 200,
+			reveal = { "close" },
+		},
+	},
+})
+
+-- Setup various plugins
+require("nvim-autopairs").setup({})
+require("nvim-surround").setup({})
+require("sort").setup()
+
+-- Configure catpuccin
+require("catppuccin").setup({
+	flavour = "auto", -- latte, frappe, macchiato, mocha
+	background = { -- :h background
+		light = "latte",
+		dark = "mocha",
+	},
+	transparent_background = true, -- disables setting the background color.
+})
+vim.cmd("colorscheme catppuccin")
+
+-- Setup yazi
+require("yazi").setup()
+vim.keymap.set("n", "<leader>e", ":Yazi<CR>")
+
+-- Setup lazygit
+vim.keymap.set("n", "<leader>g", ":LazyGit<CR>")
+
+-- Setup Terminal
+require("toggleterm").setup({
+	shade_terminals = false,
+})
+local Terminal = require("toggleterm.terminal").Terminal
+
+local function create_terminal(opts)
+	opts.hidden = true
+	local term = Terminal:new(opts)
+
+	local function toggle()
+		term:toggle()
+	end
+
+	vim.keymap.set("n", opts.key, toggle, { noremap = true, silent = true, desc = opts.desc })
+
+	return term
+end
+
+create_terminal({
+	cmd = "scooter",
+	desc = "Toggle Scooter",
+	direction = "float",
+	float_opts = { border = "curved" },
+	key = "<leader>r",
+	name = "scooter",
+})
+
+create_terminal({
+	desc = "Toggle Floating Terminal",
+	direction = "float",
+	float_opts = { border = "curved" },
+	key = "<leader>tf",
+	name = "floating_terminal",
+})
+
+create_terminal({
+	desc = "Toggle Terminal",
+	key = "<leader>tt",
+	name = "terminal",
+	size = 40,
+})
+
+create_terminal({ -- TODO, fzf gradle and let window open
+	desc = "Toggle Gradle",
+	direction = "float",
+	float_opts = { border = "curved" },
+	key = "<leader>tg",
+	name = "gradle",
+})
+
+function _G.set_terminal_keymaps()
+	local opts = { buffer = 0 }
+	vim.keymap.set("t", "<esc><esc>", [[<C-\><C-n>]], opts) -- was <esc>
+	vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
+	vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
+	vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
+	vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
+	vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
+	vim.keymap.set("t", "<C-w>", [[<C-\><C-n><C-w>]], opts)
+end
+
+vim.cmd("autocmd! TermOpen term://*toggleterm#* lua set_terminal_keymaps()")
+
+-- Setup substitute
+require("substitute").setup()
+vim.keymap.set("n", "s", require("substitute").operator, { noremap = true })
+vim.keymap.set("n", "ss", require("substitute").line, { noremap = true })
+vim.keymap.set("n", "S", require("substitute").eol, { noremap = true })
+vim.keymap.set("x", "s", require("substitute").visual, { noremap = true })
+
+-- Setup telescope
+vim.keymap.set("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Telescope find files" })
+vim.keymap.set("n", "<leader>fg", require("telescope.builtin").live_grep, { desc = "Telescope live grep" })
+vim.keymap.set("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Telescope buffers" })
+vim.keymap.set("n", "<leader>fh", require("telescope.builtin").help_tags, { desc = "Telescope help tags" })
+
+-- Enable multi select on telescope
+local select_one_or_multi = function(prompt_bufnr)
+	local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+	local multi = picker:get_multi_selection()
+	if not vim.tbl_isempty(multi) then
+		require("telescope.actions").close(prompt_bufnr)
+		for _, j in pairs(multi) do
+			if j.path ~= nil then
+				vim.cmd(string.format("%s %s", "edit", j.path))
+			end
+		end
+	else
+		require("telescope.actions").select_default(prompt_bufnr)
+	end
+end
+
+require("telescope").setup({
+	defaults = {
+		mappings = {
+			i = {
+				["<CR>"] = select_one_or_multi,
+			},
+		},
+		path_display = { "truncate" },
+	},
+})
+
+-- Setup auto session
+require("auto-session").setup({
+	suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+})
+
+-- Setup gradle
+require("gradle").setup({
+	-- keymaps = false,
+	load_on_startup = true,
+})
