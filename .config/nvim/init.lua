@@ -24,8 +24,8 @@ vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left wind
 vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
 vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
 vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
-vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>") -- Escape highlight with <esc>
-vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list" })
+-- vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>") -- Escape highlight with <esc>
+vim.keymap.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list" })
 -- vim.keymap.set("n", "<leader>fc", vim.lsp.buf.format)
 vim.keymap.set("n", "<leader>o", ":update<CR> :source<CR>")
 vim.keymap.set("n", "<leader>q", ":bdelete<CR>")
@@ -48,24 +48,25 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 -- Add plugins via vim.pack (nvim 0.12+)
 vim.pack.add({
-	{ src = "https://github.com/akinsho/bufferline.nvim.git" }, -- custom bufferline
-	{ src = "https://github.com/akinsho/toggleterm.nvim.git" }, -- enables scooter and terminal function
-	{ src = "https://github.com/catppuccin/nvim.git" },        -- fav theme
-	{ src = "https://github.com/gbprod/substitute.nvim.git" }, -- substitute commands
-	{ src = "https://github.com/kdheepak/lazygit.nvim.git" },  -- enables lazygit
-	{ src = "https://github.com/kylechui/nvim-surround.git" }, -- surround add, delete and replace
-	{ src = "https://github.com/mikavilpas/yazi.nvim" },       -- enables yazi file manager
-	{ src = "https://github.com/neovim/nvim-lspconfig" },      -- default config for lsp's
-	{ src = "https://github.com/numToStr/Comment.nvim.git" },  -- enables comment function
-	{ src = "https://github.com/nvim-lua/plenary.nvim" },      -- dependency for yazi
-	{ src = "https://github.com/nvim-telescope/telescope.nvim.git" }, -- fuzzy file, grep and buffer search
-	{ src = "https://github.com/nvim-tree/nvim-web-devicons.git" }, -- dependency for bufferline
-	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },
-	{ src = "https://github.com/pandalec/gradle.nvim" },       -- my gradle plugin :)
-	{ src = "https://github.com/rmagatti/auto-session.git" },  -- auto save and restore sessions
-	{ src = "https://github.com/sschleemilch/slimline.nvim.git" }, -- slim statusline
-	{ src = "https://github.com/stevearc/conform.nvim.git" },  -- add format
-	{ src = "https://github.com/windwp/nvim-autopairs" },      -- autopairs for chars
+	{ src = "https://github.com/akinsho/bufferline.nvim.git" },                   -- custom bufferline
+	{ src = "https://github.com/akinsho/toggleterm.nvim.git" },                   -- enables scooter and terminal function
+	{ src = "https://github.com/catppuccin/nvim.git" },                           -- fav theme
+	{ src = "https://github.com/gbprod/substitute.nvim.git" },                    -- substitute commands
+	{ src = "https://github.com/kdheepak/lazygit.nvim.git" },                     -- enables lazygit
+	{ src = "https://github.com/kylechui/nvim-surround.git" },                    -- surround add, delete and replace
+	{ src = "https://github.com/mikavilpas/yazi.nvim" },                          -- enables yazi file manager
+	{ src = "https://github.com/neovim/nvim-lspconfig" },                         -- default config for lsp's
+	{ src = "https://github.com/numToStr/Comment.nvim.git" },                     -- enables comment function
+	{ src = "https://github.com/nvim-lua/plenary.nvim" },                         -- dependency for yazi
+	{ src = "https://github.com/nvim-telescope/telescope.nvim.git" },             -- fuzzy file, grep and buffer search
+	{ src = "https://github.com/nvim-tree/nvim-web-devicons.git" },               -- dependency for bufferline
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },               -- treesitter
+	{ src = "https://github.com/pandalec/gradle.nvim" },                          -- my gradle plugin :)
+	{ src = "https://github.com/rmagatti/auto-session.git" },                     -- auto save and restore sessions
+	{ src = "https://github.com/sschleemilch/slimline.nvim.git" },                -- slim statusline
+	{ src = "https://github.com/stevearc/conform.nvim.git" },                     -- add format
+	{ src = "https://github.com/windwp/nvim-autopairs" },                         -- autopairs for chars
+	{ src = "https://github.com/Saghen/blink.cmp",                 version = "v1.6.0" }, -- try out another autocomplete
 })
 
 -- Enable lsp
@@ -84,22 +85,42 @@ vim.lsp.enable({
 	"yamlls",
 })
 
--- Enable auto completion
-vim.api.nvim_create_autocmd("LspAttach", {
-	callback = function(ev)
-		local client = vim.lsp.get_client_by_id(ev.data.client_id)
-		if client ~= nil and client:supports_method("textDocument/completion") then
-			vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
-		end
-	end,
+-- Enable ansible lsp for yml files -- not needed anymore?
+vim.filetype.add({
+	extension = {
+		yml = function(_, bufnr)
+			local path = vim.api.nvim_buf_get_name(bufnr)
+			if path:match("playbooks/") or path:match("roles/.*/tasks/") then
+				return "yaml.ansible"
+			else
+				return "yaml"
+			end
+		end,
+	},
 })
 
--- -- Enable ansible lsp for yml files -- not needed anymore?
--- vim.filetype.add({
--- 	extension = {
--- 		yml = "yaml.ansible",
--- 	},
--- })
+require("blink.cmp").setup({
+	signature = { enabled = true },
+	keymap = {
+		preset = "enter",
+		["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
+		["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
+	},
+	cmdline = {
+		keymap = { preset = 'inherit' },
+		completion = { menu = { auto_show = true } },
+	},
+	completion = {
+		documentation = { auto_show = true, auto_show_delay_ms = 500 },
+		menu = {
+			auto_show = true,
+			draw = {
+				treesitter = { "lsp" },
+				columns = { { "kind_icon", "label", "label_description", gap = 1 }, { "kind" } },
+			},
+		},
+	},
+})
 
 -- Configure lua_ls that it wont show vim errors
 vim.lsp.config("lua_ls", {
@@ -140,14 +161,14 @@ require("slimline").setup({
 	configs = {
 		mode = {
 			verbose = true,
-			-- hl = {
-			-- 	normal = "Type",
-			-- 	visual = "Keyword",
-			-- 	insert = "Function",
-			-- 	replace = "Statement",
-			-- 	command = "String",
-			-- 	other = "Function",
-			-- },
+			hl = {
+				normal = "Type",
+				visual = "Keyword",
+				insert = "Function",
+				replace = "Statement",
+				command = "String",
+				other = "Function",
+			},
 		},
 		path = {
 			hl = {
@@ -219,7 +240,7 @@ require("catppuccin").setup({
 		light = "latte",
 		dark = "mocha",
 	},
-	transparent_background = true, -- disables setting the background color.
+	-- transparent_background = true, -- disables setting the background color.
 })
 vim.cmd("colorscheme catppuccin")
 
@@ -378,4 +399,5 @@ require("auto-session").setup({
 require("gradle").setup({
 	-- keymaps = false,
 	load_on_startup = true,
+	disable_start_notification = true,
 })
