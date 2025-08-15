@@ -29,8 +29,8 @@ vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, { desc = "Open [D]ia
 -- vim.keymap.set("n", "<leader>fc", vim.lsp.buf.format)
 vim.keymap.set("n", "<leader>o", ":update<CR> :source<CR>")
 vim.keymap.set("n", "<leader>q", ":bdelete<CR>")
--- vim.keymap.set("n", "<leader>qq", ":quit<CR>")
 vim.keymap.set("n", "<leader>w", ":write<CR>")
+vim.keymap.set("v", "<leader>w", "<Esc>:write<CR>")
 vim.keymap.set("v", "<A-h>", "<gv", { desc = "Move line(s) to the left" })
 vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down" })
 vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up" })
@@ -85,26 +85,21 @@ vim.lsp.enable({
 })
 
 -- Enable auto completion
-vim.lsp.config("*", {
-	on_attach = function(client, bufnr)
-		vim.lsp.completion.enable(true, client.id, bufnr, {
-			autotrigger = true,
-			convert = function(item)
-				return { abbr = item.label:gsub("%b()", "") }
-			end,
-		})
-		vim.keymap.set("i", "<c-space>", function()
-			vim.lsp.completion.get()
-		end)
+vim.api.nvim_create_autocmd("LspAttach", {
+	callback = function(ev)
+		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+		if client ~= nil and client:supports_method("textDocument/completion") then
+			vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+		end
 	end,
 })
 
--- Enable ansible lsp for yml files -- not needed anymore?
-vim.filetype.add({
-	extension = {
-		yml = "yaml.ansible",
-	},
-})
+-- -- Enable ansible lsp for yml files -- not needed anymore?
+-- vim.filetype.add({
+-- 	extension = {
+-- 		yml = "yaml.ansible",
+-- 	},
+-- })
 
 -- Configure lua_ls that it wont show vim errors
 vim.lsp.config("lua_ls", {
@@ -145,14 +140,14 @@ require("slimline").setup({
 	configs = {
 		mode = {
 			verbose = true,
-			hl = {
-				normal = "Type",
-				visual = "Keyword",
-				insert = "Function",
-				replace = "Statement",
-				command = "String",
-				other = "Function",
-			},
+			-- hl = {
+			-- 	normal = "Type",
+			-- 	visual = "Keyword",
+			-- 	insert = "Function",
+			-- 	replace = "Statement",
+			-- 	command = "String",
+			-- 	other = "Function",
+			-- },
 		},
 		path = {
 			hl = {
@@ -207,6 +202,16 @@ require("bufferline").setup({
 require("nvim-autopairs").setup({})
 require("nvim-surround").setup({})
 
+-- Setup Comment
+require("Comment").setup()
+vim.keymap.set("n", "<leader>c", require("Comment.api").toggle.linewise.current,
+	{ silent = true, desc = "Toggle comment line" })
+vim.keymap.set("v", "<leader>c", "<Plug>(comment_toggle_linewise_visual)gv",
+	{ silent = true, desc = "Toggle comment selection" })
+vim.keymap.set("v", "<leader>C", "<Plug>(comment_toggle_blockwise_visual)gv",
+	{ silent = true, desc = "Toggle block comment selection" })
+
+
 -- Configure catpuccin
 require("catppuccin").setup({
 	flavour = "auto", -- latte, frappe, macchiato, mocha
@@ -224,6 +229,24 @@ vim.keymap.set("n", "<leader>e", ":Yazi<CR>")
 
 -- Setup lazygit
 vim.keymap.set("n", "<leader>g", ":LazyGit<CR>")
+function EditLineFromLazygit(file_path, line)
+	local path = vim.fn.expand("%:p")
+	if path == file_path then
+		vim.cmd(tostring(line))
+	else
+		vim.cmd("e " .. file_path)
+		vim.cmd(tostring(line))
+	end
+end
+
+function EditFromLazygit(file_path)
+	local path = vim.fn.expand("%:p")
+	if path == file_path then
+		return
+	else
+		vim.cmd("e " .. file_path)
+	end
+end
 
 -- Setup Terminal
 require("toggleterm").setup({
@@ -264,7 +287,7 @@ local scooter_term = create_terminal({
 	key = "<leader>r",
 })
 
-local float_term = create_terminal({
+create_terminal({
 	direction = "float",
 	float_opts = { border = "curved", title_pos = 'center' },
 	name = "floating_terminal",
@@ -273,7 +296,7 @@ local float_term = create_terminal({
 	key = "<leader>tt",
 })
 
-local horizontal_term = create_terminal({
+create_terminal({
 	name = "terminal",
 	direction = "horizontal",
 }, {
@@ -281,7 +304,7 @@ local horizontal_term = create_terminal({
 	key = "<leader>th",
 })
 
-local vertical_term = create_terminal({
+create_terminal({
 	name = "terminal",
 	direction = "vertical",
 }, {
