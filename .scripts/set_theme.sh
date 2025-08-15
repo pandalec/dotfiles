@@ -15,7 +15,6 @@ set_fish() {
 
 set_scooter() {
 	sed -i "s/syntax_highlighting_theme = \".*\"/syntax_highlighting_theme = \"${1}\"/" "${HOME}/.dotfiles/.config/scooter/config.toml"
-	pkill -USR1 hx
 }
 
 set_helix() {
