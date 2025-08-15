@@ -23,7 +23,7 @@ set_helix() {
 }
 
 set_yazi() {
-	cp "${HOME}/.dotfiles/.config/yazi/theme_${1}.toml" "${HOME}/.dotfiles/.config/yazi/theme.toml"
+	cp -f "${HOME}/.dotfiles/.config/yazi/theme_${1}.toml" "${HOME}/.dotfiles/.config/yazi/theme.toml"
 }
 
 set_kitty() {
