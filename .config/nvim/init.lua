@@ -99,6 +99,7 @@ vim.filetype.add({
 	},
 })
 
+-- Enable auto completion
 require("blink.cmp").setup({
 	signature = { enabled = true },
 	keymap = {
@@ -231,7 +232,6 @@ vim.keymap.set("v", "<leader>c", "<Plug>(comment_toggle_linewise_visual)gv",
 	{ silent = true, desc = "Toggle comment selection" })
 vim.keymap.set("v", "<leader>C", "<Plug>(comment_toggle_blockwise_visual)gv",
 	{ silent = true, desc = "Toggle block comment selection" })
-
 
 -- Configure catpuccin
 require("catppuccin").setup({
