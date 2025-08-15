@@ -14,7 +14,7 @@ vim.o.signcolumn = "yes"
 vim.o.swapfile = false
 vim.o.tabstop = 2
 vim.o.termguicolors = true
-vim.o.timeoutlen = 300 -- reduce timeout during keypresses
+vim.o.timeoutlen = 500 -- reduce timeout during keypresses
 vim.o.undofile = true
 vim.o.winborder = "rounded"
 vim.opt.completeopt = { "menuone", "noselect", "popup" }
@@ -26,7 +26,7 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>") -- Escape highlight with <esc>
 vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list" })
-vim.keymap.set("n", "<leader>fc", vim.lsp.buf.format)
+-- vim.keymap.set("n", "<leader>fc", vim.lsp.buf.format)
 vim.keymap.set("n", "<leader>o", ":update<CR> :source<CR>")
 vim.keymap.set("n", "<leader>q", ":bdelete<CR>")
 -- vim.keymap.set("n", "<leader>qq", ":quit<CR>")
@@ -35,6 +35,7 @@ vim.keymap.set("v", "<A-h>", "<gv", { desc = "Move line(s) to the left" })
 vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down" })
 vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up" })
 vim.keymap.set("v", "<A-l>", ">gv", { desc = "Move line(s) to the right" })
+vim.keymap.set("n", " ", "<Nop>", { desc = "Ignore space", silent = true }) -- hopefully fixing space as leader issue
 
 -- Highlight when yanking text
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -59,10 +60,9 @@ vim.pack.add({
 	{ src = "https://github.com/nvim-lua/plenary.nvim" },      -- dependency for yazi
 	{ src = "https://github.com/nvim-telescope/telescope.nvim.git" }, -- fuzzy file, grep and buffer search
 	{ src = "https://github.com/nvim-tree/nvim-web-devicons.git" }, -- dependency for bufferline
-	{ src = "https://github.com/nvim-treesitter/nvim-treesitter",  version = "main" },
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },
 	{ src = "https://github.com/pandalec/gradle.nvim" },       -- my gradle plugin :)
 	{ src = "https://github.com/rmagatti/auto-session.git" },  -- auto save and restore sessions
-	{ src = "https://github.com/sQVe/sort.nvim.git" },         -- sorting plugin
 	{ src = "https://github.com/sschleemilch/slimline.nvim.git" }, -- slim statusline
 	{ src = "https://github.com/stevearc/conform.nvim.git" },  -- add format
 	{ src = "https://github.com/windwp/nvim-autopairs" },      -- autopairs for chars
@@ -206,7 +206,6 @@ require("bufferline").setup({
 -- Setup various plugins
 require("nvim-autopairs").setup({})
 require("nvim-surround").setup({})
-require("sort").setup()
 
 -- Configure catpuccin
 require("catppuccin").setup({
@@ -229,57 +228,70 @@ vim.keymap.set("n", "<leader>g", ":LazyGit<CR>")
 -- Setup Terminal
 require("toggleterm").setup({
 	shade_terminals = false,
+	size = function(term)
+		if term.direction == "horizontal" then
+			return vim.o.lines * 0.5
+		elseif term.direction == "vertical" then
+			return vim.o.columns * 0.5
+		end
+	end,
 })
+
 local Terminal = require("toggleterm.terminal").Terminal
 
-local function create_terminal(opts)
-	opts.hidden = true
-	local term = Terminal:new(opts)
+local function create_terminal(term_opts, key_opts)
+	term_opts.hidden = true
+	term_opts.start_in_insert = true
+
+	local term = Terminal:new(term_opts)
 
 	local function toggle()
 		term:toggle()
 	end
 
-	vim.keymap.set("n", opts.key, toggle, { noremap = true, silent = true, desc = opts.desc })
+	vim.keymap.set("n", key_opts.key, toggle, { noremap = true, silent = true, desc = key_opts.desc })
 
 	return term
 end
 
-create_terminal({
+local scooter_term = create_terminal({
 	cmd = "scooter",
-	desc = "Toggle Scooter",
 	direction = "float",
-	float_opts = { border = "curved" },
-	key = "<leader>r",
+	float_opts = { border = "curved", title_pos = 'center' },
 	name = "scooter",
+}, {
+	desc = "Toggle scooter",
+	key = "<leader>r",
 })
 
-create_terminal({
-	desc = "Toggle Floating Terminal",
+local float_term = create_terminal({
 	direction = "float",
-	float_opts = { border = "curved" },
-	key = "<leader>tf",
+	float_opts = { border = "curved", title_pos = 'center' },
 	name = "floating_terminal",
-})
-
-create_terminal({
-	desc = "Toggle Terminal",
+}, {
+	desc = "Toggle floating terminal",
 	key = "<leader>tt",
-	name = "terminal",
-	size = 40,
 })
 
-create_terminal({ -- TODO, fzf gradle and let window open
-	desc = "Toggle Gradle",
-	direction = "float",
-	float_opts = { border = "curved" },
-	key = "<leader>tg",
-	name = "gradle",
+local horizontal_term = create_terminal({
+	name = "terminal",
+	direction = "horizontal",
+}, {
+	desc = "Toggle horizontal terminal",
+	key = "<leader>th",
+})
+
+local vertical_term = create_terminal({
+	name = "terminal",
+	direction = "vertical",
+}, {
+	desc = "Toggle vertical terminal",
+	key = "<leader>tv",
 })
 
 function _G.set_terminal_keymaps()
 	local opts = { buffer = 0 }
-	vim.keymap.set("t", "<esc><esc>", [[<C-\><C-n>]], opts) -- was <esc>
+	vim.keymap.set("t", "<esc><esc>", [[<C-\><C-n>]], opts)
 	vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
 	vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
 	vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
@@ -298,10 +310,14 @@ vim.keymap.set("n", "S", require("substitute").eol, { noremap = true })
 vim.keymap.set("x", "s", require("substitute").visual, { noremap = true })
 
 -- Setup telescope
-vim.keymap.set("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Telescope find files" })
-vim.keymap.set("n", "<leader>fg", require("telescope.builtin").live_grep, { desc = "Telescope live grep" })
-vim.keymap.set("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Telescope buffers" })
-vim.keymap.set("n", "<leader>fh", require("telescope.builtin").help_tags, { desc = "Telescope help tags" })
+vim.keymap.set("n", "<leader>f", require("telescope.builtin").find_files,
+	{ desc = "Telescope find files", noremap = true })
+vim.keymap.set("n", "<leader>l", require("telescope.builtin").live_grep,
+	{ desc = "Telescope live grep", noremap = true })
+vim.keymap.set("n", "<leader>b", require("telescope.builtin").buffers,
+	{ desc = "Telescope buffers", noremap = true })
+vim.keymap.set("n", "<leader>h", require("telescope.builtin").help_tags,
+	{ desc = "Telescope help tags", noremap = true })
 
 -- Enable multi select on telescope
 local select_one_or_multi = function(prompt_bufnr)
