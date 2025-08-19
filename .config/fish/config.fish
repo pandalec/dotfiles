@@ -1,7 +1,4 @@
-function fish_greeting
-    # echo ""
-    # neofetch
-end
+source ~/.config/fish/functions/common.fish
 
 # starship init fish | source
 function starship_transient_prompt_func

@@ -6,7 +6,7 @@ vim.g.maplocalleader = " "
 vim.o.clipboard = "unnamedplus" -- use system clipboard
 vim.o.confirm = true
 vim.o.cursorline = true
-vim.o.mouse = "a"           -- enable mouse in all modes
+-- vim.o.mouse = "a" -- enable mouse in all modes
 vim.o.mousemoveevent = true -- enable mouse move events
 vim.o.number = true
 vim.o.relativenumber = true
@@ -18,24 +18,7 @@ vim.o.timeoutlen = 500 -- reduce timeout during keypresses
 vim.o.undofile = true
 vim.o.winborder = "rounded"
 vim.opt.completeopt = { "menuone", "noselect", "popup" }
-
--- Set keymaps
-vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
-vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
-vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
-vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
--- vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>") -- Escape highlight with <esc>
-vim.keymap.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list" })
--- vim.keymap.set("n", "<leader>fc", vim.lsp.buf.format)
-vim.keymap.set("n", "<leader>o", ":update<CR> :source<CR>")
-vim.keymap.set("n", "<leader>q", ":bdelete<CR>")
-vim.keymap.set("n", "<leader>w", ":write<CR>")
-vim.keymap.set("v", "<leader>w", "<Esc>:write<CR>")
-vim.keymap.set("v", "<A-h>", "<gv", { desc = "Move line(s) to the left" })
-vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down" })
-vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up" })
-vim.keymap.set("v", "<A-l>", ">gv", { desc = "Move line(s) to the right" })
-vim.keymap.set("n", " ", "<Nop>", { desc = "Ignore space", silent = true }) -- hopefully fixing space as leader issue
+vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
 -- Highlight when yanking text
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -48,44 +31,71 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 -- Add plugins via vim.pack (nvim 0.12+)
 vim.pack.add({
-	{ src = "https://github.com/akinsho/bufferline.nvim.git" },                   -- custom bufferline
-	{ src = "https://github.com/akinsho/toggleterm.nvim.git" },                   -- enables scooter and terminal function
-	{ src = "https://github.com/catppuccin/nvim.git" },                           -- fav theme
-	{ src = "https://github.com/gbprod/substitute.nvim.git" },                    -- substitute commands
-	{ src = "https://github.com/kdheepak/lazygit.nvim.git" },                     -- enables lazygit
-	{ src = "https://github.com/kylechui/nvim-surround.git" },                    -- surround add, delete and replace
-	{ src = "https://github.com/mikavilpas/yazi.nvim" },                          -- enables yazi file manager
-	{ src = "https://github.com/neovim/nvim-lspconfig" },                         -- default config for lsp's
-	{ src = "https://github.com/numToStr/Comment.nvim.git" },                     -- enables comment function
-	{ src = "https://github.com/nvim-lua/plenary.nvim" },                         -- dependency for yazi
-	{ src = "https://github.com/nvim-telescope/telescope.nvim.git" },             -- fuzzy file, grep and buffer search
-	{ src = "https://github.com/nvim-tree/nvim-web-devicons.git" },               -- dependency for bufferline
-	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },               -- treesitter
-	{ src = "https://github.com/pandalec/gradle.nvim" },                          -- my gradle plugin :)
-	{ src = "https://github.com/rmagatti/auto-session.git" },                     -- auto save and restore sessions
-	{ src = "https://github.com/sschleemilch/slimline.nvim.git" },                -- slim statusline
-	{ src = "https://github.com/stevearc/conform.nvim.git" },                     -- add format
-	{ src = "https://github.com/windwp/nvim-autopairs" },                         -- autopairs for chars
-	{ src = "https://github.com/Saghen/blink.cmp",                 version = "v1.6.0" }, -- try out another autocomplete
+	{ src = "https://github.com/akinsho/bufferline.nvim.git" }, -- custom bufferline
+	{ src = "https://github.com/akinsho/toggleterm.nvim.git" }, -- enables scooter and terminal function
+	{ src = "https://github.com/catppuccin/nvim.git" }, -- fav theme
+	{ src = "https://github.com/gbprod/substitute.nvim.git" }, -- substitute commands
+	{ src = "https://github.com/kdheepak/lazygit.nvim.git" }, -- enables lazygit
+	{ src = "https://github.com/kylechui/nvim-surround.git" }, -- surround add, delete and replace
+	{ src = "https://github.com/mikavilpas/yazi.nvim" }, -- enables yazi file manager
+	{ src = "https://github.com/neovim/nvim-lspconfig" }, -- default config for lsp's
+	{ src = "https://github.com/numToStr/Comment.nvim.git" }, -- enables comment function
+	{ src = "https://github.com/nvim-lua/plenary.nvim" }, -- dependency for yazi
+	{ src = "https://github.com/nvim-telescope/telescope.nvim.git" }, -- fuzzy file, grep and buffer search
+	{ src = "https://github.com/nvim-tree/nvim-web-devicons.git" }, -- dependency for bufferline
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" }, -- treesitter
+	{ src = "https://github.com/pandalec/gradle.nvim" }, -- my gradle plugin :)
+	{ src = "https://github.com/rmagatti/auto-session.git" }, -- auto save and restore sessions
+	{ src = "https://github.com/sschleemilch/slimline.nvim.git" }, -- slim statusline
+	{ src = "https://github.com/stevearc/conform.nvim.git" }, -- add format
+	{ src = "https://github.com/windwp/nvim-autopairs" }, -- autopairs for chars
+	{ src = "https://github.com/Saghen/blink.cmp", version = "v1.6.0" }, -- try out another autocomplete
+	{ src = "https://github.com/mason-org/mason.nvim" }, -- replace system lsp/linter installations
+	{ src = "https://github.com/mason-org/mason-lspconfig.nvim" }, -- replace system lsp/linter installations
+	{ src = "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim" }, -- replace system lsp/linter installations
+	-- { src = "https://github.com/brenton-leighton/multiple-cursors.nvim.git" },
 })
 
--- Enable lsp
-vim.lsp.enable({
-	"ansiblels",
-	"bashls",
-	"fish_lsp",
-	-- "groovyls",
-	"html",
-	"jsonls",
-	"kotlin_language_server",
-	"lua_ls",
-	"marksman",
-	"rust_analyzer",
-	"taplo",
-	"yamlls",
+-- Setup mason and auto install all dependencies
+require("mason").setup()
+require("mason-lspconfig").setup()
+require("mason-tool-installer").setup({
+	ensure_installed = {
+		"ansible-lint",
+		"ansiblels",
+		"bashls",
+		"black", -- python format
+		"cssls",
+		"docker_compose_language_service",
+		"docker_language_server",
+		"dockerls",
+		"fish_lsp",
+		"groovyls",
+		"helm_ls",
+		"html",
+		"jsonls",
+		"kotlin-debug-adapter",
+		"kotlin_language_server",
+		"ktlint",
+		"lua_ls",
+		"marksman",
+		"nginx-config-formatter",
+		"nginx-language-server",
+		"npm-groovy-lint",
+		"prettier",
+		"pyright",
+		"rust_analyzer",
+		"shfmt",
+		"stylua",
+		"systemd_ls",
+		"terraform",
+		"terraformls",
+		"tree-sitter-cli",
+		"yamlls",
+	},
 })
 
--- Enable ansible lsp for yml files -- not needed anymore?
+-- Enable ansible lsp for yml files
 vim.filetype.add({
 	extension = {
 		yml = function(_, bufnr)
@@ -96,6 +106,33 @@ vim.filetype.add({
 				return "yaml"
 			end
 		end,
+		kts = "kotlin",
+	},
+})
+
+-- Configure auto-formatter on save
+require("conform").setup({
+	formatters_by_ft = {
+		ansible = { "prettier", "ansible-lint", stop_after_first = true },
+		bash = { "shfmt" },
+		css = { "prettier" },
+		groovy = { "npm-groovy-lint" },
+		helm = { "prettier" },
+		html = { "prettier" },
+		javascript = { "prettier" },
+		json = { "prettier" },
+		kotlin = { "ktlint" },
+		lua = { "stylua" },
+		markdown = { "prettier" },
+		python = { "black" },
+		rust = { "rustfmt" },
+		toml = { "taplo" },
+		terraform = { "terraform_fmt" },
+		yaml = { "prettier" },
+	},
+	format_on_save = {
+		timeout_ms = 5000,
+		lsp_format = "fallback",
 	},
 })
 
@@ -108,7 +145,7 @@ require("blink.cmp").setup({
 		["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
 	},
 	cmdline = {
-		keymap = { preset = 'inherit' },
+		keymap = { preset = "inherit" },
 		completion = { menu = { auto_show = true } },
 	},
 	completion = {
@@ -130,26 +167,16 @@ vim.lsp.config("lua_ls", {
 			diagnostics = {
 				globals = { "vim" },
 			},
+			telemetry = {
+				enable = false,
+			},
 		},
 	},
 })
 
--- Configure formatter
-require("conform").setup({
-	formatters_by_ft = {
-		-- groovy = { "npm-groovy-lint" },
-		kotlin = { "ktlint" },
-		lua = { "stylua" },
-		markdown = { "prettierd", "prettier", stop_after_first = true },
-		-- yaml = { "ansible-lint", "prettierd", "prettier", stop_after_first = true },
-		yaml = { "prettierd", "prettier", "ansible-lint", stop_after_first = true },
-	},
-	format_on_save = {
-		-- These options will be passed to conform.format()
-		-- timeout_ms = 500, -- Doesn't work for ansible-lint
-		timeout_ms = 1500, -- Doesn't work for ansible-lint
-		lsp_format = "fallback",
-	},
+-- Configure kotlin_language_server for kts and kt files
+vim.lsp.config("kotlin_language_server", {
+	filetypes = { "kotlin", "kt", "kts" },
 })
 
 -- Setup slimline
@@ -222,21 +249,12 @@ require("bufferline").setup({
 
 -- Setup various plugins
 require("nvim-autopairs").setup({})
+require("yazi").setup()
 require("nvim-surround").setup({})
-
--- Setup Comment
 require("Comment").setup()
-vim.keymap.set("n", "<leader>c", require("Comment.api").toggle.linewise.current,
-	{ silent = true, desc = "Toggle comment line" })
-vim.keymap.set("v", "<leader>c", "<Plug>(comment_toggle_linewise_visual)gv",
-	{ silent = true, desc = "Toggle comment selection" })
-vim.keymap.set("v", "<leader>C", "<Plug>(comment_toggle_blockwise_visual)gv",
-	{ silent = true, desc = "Toggle block comment selection" })
-
--- Configure catpuccin
 require("catppuccin").setup({
-	flavour = "auto", -- latte, frappe, macchiato, mocha
-	background = { -- :h background
+	flavour = "auto",
+	background = {
 		light = "latte",
 		dark = "mocha",
 	},
@@ -244,12 +262,7 @@ require("catppuccin").setup({
 })
 vim.cmd("colorscheme catppuccin")
 
--- Setup yazi
-require("yazi").setup()
-vim.keymap.set("n", "<leader>e", ":Yazi<CR>")
-
 -- Setup lazygit
-vim.keymap.set("n", "<leader>g", ":LazyGit<CR>")
 function EditLineFromLazygit(file_path, line)
 	local path = vim.fn.expand("%:p")
 	if path == file_path then
@@ -269,7 +282,7 @@ function EditFromLazygit(file_path)
 	end
 end
 
--- Setup Terminal
+-- Setup toggleterm
 require("toggleterm").setup({
 	shade_terminals = false,
 	size = function(term)
@@ -283,55 +296,56 @@ require("toggleterm").setup({
 
 local Terminal = require("toggleterm.terminal").Terminal
 
-local function create_terminal(term_opts, key_opts)
-	term_opts.hidden = true
-	term_opts.start_in_insert = true
-
-	local term = Terminal:new(term_opts)
-
-	local function toggle()
-		term:toggle()
-	end
-
-	vim.keymap.set("n", key_opts.key, toggle, { noremap = true, silent = true, desc = key_opts.desc })
-
-	return term
-end
-
-local scooter_term = create_terminal({
+-- scooter terminal
+local scooter = Terminal:new({
 	cmd = "scooter",
 	direction = "float",
-	float_opts = { border = "curved", title_pos = 'center' },
+	float_opts = { border = "curved", title_pos = "center" },
 	name = "scooter",
-}, {
-	desc = "Toggle scooter",
-	key = "<leader>r",
+	hidden = true,
+	start_in_insert = true,
 })
 
-create_terminal({
+_G.ToggleScooter = function()
+	scooter:toggle()
+end
+
+-- floating terminal
+local floating_terminal = Terminal:new({
 	direction = "float",
-	float_opts = { border = "curved", title_pos = 'center' },
+	float_opts = { border = "curved", title_pos = "center" },
 	name = "floating_terminal",
-}, {
-	desc = "Toggle floating terminal",
-	key = "<leader>tt",
+	hidden = true,
+	start_in_insert = true,
 })
 
-create_terminal({
+_G.ToggleFloatingTerminal = function()
+	floating_terminal:toggle()
+end
+
+-- horizontal terminal
+local horizontal_terminal = Terminal:new({
 	name = "terminal",
 	direction = "horizontal",
-}, {
-	desc = "Toggle horizontal terminal",
-	key = "<leader>th",
+	hidden = true,
+	start_in_insert = true,
 })
 
-create_terminal({
+_G.ToggleHorizontalTerminal = function()
+	horizontal_terminal:toggle()
+end
+
+-- vertical terminal
+local vertical_terminal = Terminal:new({
 	name = "terminal",
 	direction = "vertical",
-}, {
-	desc = "Toggle vertical terminal",
-	key = "<leader>tv",
+	hidden = true,
+	start_in_insert = true,
 })
+
+_G.ToggleVerticalTerminal = function()
+	vertical_terminal:toggle()
+end
 
 function _G.set_terminal_keymaps()
 	local opts = { buffer = 0 }
@@ -346,22 +360,25 @@ end
 
 vim.cmd("autocmd! TermOpen term://*toggleterm#* lua set_terminal_keymaps()")
 
+-- Setup telescope
+require("telescope").setup({
+	defaults = {
+		layout_config = {
+			-- vertical = { -- doesnt work
+			-- 	width = { padding = 0 },
+			-- },
+			horizontal = {
+				width = { padding = 0 },
+			},
+		},
+		path_display = {
+			"truncate",
+		},
+	},
+})
+
 -- Setup substitute
 require("substitute").setup()
-vim.keymap.set("n", "s", require("substitute").operator, { noremap = true })
-vim.keymap.set("n", "ss", require("substitute").line, { noremap = true })
-vim.keymap.set("n", "S", require("substitute").eol, { noremap = true })
-vim.keymap.set("x", "s", require("substitute").visual, { noremap = true })
-
--- Setup telescope
-vim.keymap.set("n", "<leader>f", require("telescope.builtin").find_files,
-	{ desc = "Telescope find files", noremap = true })
-vim.keymap.set("n", "<leader>l", require("telescope.builtin").live_grep,
-	{ desc = "Telescope live grep", noremap = true })
-vim.keymap.set("n", "<leader>b", require("telescope.builtin").buffers,
-	{ desc = "Telescope buffers", noremap = true })
-vim.keymap.set("n", "<leader>h", require("telescope.builtin").help_tags,
-	{ desc = "Telescope help tags", noremap = true })
 
 -- Setup auto session
 require("auto-session").setup({
@@ -370,7 +387,50 @@ require("auto-session").setup({
 
 -- Setup gradle
 require("gradle").setup({
-	-- keymaps = false,
+	keymaps = false,
 	load_on_startup = true,
 	disable_startup_notification = true,
 })
+
+-- Keymaps
+vim.keymap.set("n", "<A-Left>", ":bprevious<CR>", { desc = "Go to previous buffer" })
+vim.keymap.set("n", "<A-Right>", ":bnext<CR>", { desc = "Go to next buffer" })
+vim.keymap.set("n", "<A-h>", ":bprevious<CR>", { desc = "Go to previous buffer" })
+vim.keymap.set("n", "<A-l>", ":bnext<CR>", { desc = "Go to next buffer" })
+vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
+vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
+vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
+vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
+vim.keymap.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list" })
+vim.keymap.set("n", "<leader>GG", ":lua require('gradle').telescope.pick_tasks()<CR>", { silent = true })
+vim.keymap.set("n", "<leader>GR", ":lua require('gradle').tasks.refresh_tasks_async()<CR>", { silent = true })
+vim.keymap.set("n", "<leader>GW", ":lua require('gradle').terminal.toggle()<CR>", { silent = true })
+vim.keymap.set("n", "<leader>TH", ":lua ToggleHorizontalTerminal()<CR>", { silent = true, desc = "== terminal" })
+vim.keymap.set("n", "<leader>TV", ":lua ToggleVerticalTerminal()<CR>", { silent = true, desc = "|| terminal" })
+vim.keymap.set("n", "<leader>b", require("telescope.builtin").buffers, { desc = "Find buffers", noremap = true })
+vim.keymap.set("n", "<leader>c", require("Comment.api").toggle.linewise.current, { silent = true, desc = "Line" })
+vim.keymap.set("n", "<leader>e", ":Yazi<CR>")
+vim.keymap.set("n", "<leader>f", require("telescope.builtin").find_files, { desc = "Find files", noremap = true })
+vim.keymap.set("n", "<leader>g", ":LazyGit<CR>")
+vim.keymap.set("n", "<leader>l", require("telescope.builtin").live_grep, { desc = "Live grep", noremap = true })
+vim.keymap.set("n", "<leader>o", ":update<CR> :source<CR>")
+vim.keymap.set("n", "<leader>q", ":bdelete<CR>")
+vim.keymap.set("n", "<leader>r", ":lua ToggleScooter()<CR>", { silent = true, desc = "Scooter" })
+vim.keymap.set("n", "<leader>t", ":lua ToggleFloatingTerminal()<CR>", { silent = true, desc = "Floating terminal" })
+vim.keymap.set("n", "<leader>w", ":write<CR>")
+vim.keymap.set("n", "S", require("substitute").eol, { noremap = true })
+vim.keymap.set("n", "s", require("substitute").operator, { noremap = true })
+vim.keymap.set("n", "ss", require("substitute").line, { noremap = true })
+vim.keymap.set("v", "<A-Left>", "<Esc>:bprevious<CR>", { desc = "Go to previous buffer" })
+vim.keymap.set("v", "<A-Right>", "<Esc>:bnext<CR>", { desc = "Go to next buffer" })
+vim.keymap.set("v", "<A-h>", "<Esc>:bprevious<CR>", { desc = "Go to previous buffer" })
+vim.keymap.set("v", "<A-l>", "<Esc>:bnext<CR>", { desc = "Go to next buffer" })
+vim.keymap.set("v", "<leader>C", "<Plug>(comment_toggle_blockwise_visual)gv", { silent = true, desc = "Block" })
+vim.keymap.set("v", "<leader>c", "<Plug>(comment_toggle_linewise_visual)gv", { silent = true, desc = "Selection" })
+vim.keymap.set("v", "<leader>w", "<Esc>:write<CR>")
+vim.keymap.set("v", "H", "<gv", { desc = "Move line(s) to the left" })
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down" })
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up" })
+vim.keymap.set("v", "L", ">gv", { desc = "Move line(s) to the right" })
+vim.keymap.set("x", "s", require("substitute").visual, { noremap = true })
+vim.keymap.set({ "n", "v" }, " ", "<Nop>", { desc = "Ignore space", silent = true }) -- hopefully fixing space as leader issue
