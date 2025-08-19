@@ -53,7 +53,6 @@ vim.pack.add({
 	{ src = "https://github.com/mason-org/mason.nvim" }, -- replace system lsp/linter installations
 	{ src = "https://github.com/mason-org/mason-lspconfig.nvim" }, -- replace system lsp/linter installations
 	{ src = "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim" }, -- replace system lsp/linter installations
-	-- { src = "https://github.com/brenton-leighton/multiple-cursors.nvim.git" },
 })
 
 -- Setup mason and auto install all dependencies
@@ -156,6 +155,9 @@ require("blink.cmp").setup({
 				treesitter = { "lsp" },
 				columns = { { "kind_icon", "label", "label_description", gap = 1 }, { "kind" } },
 			},
+		},
+		list = {
+			selection = { preselect = false, auto_insert = true },
 		},
 	},
 })
@@ -401,6 +403,7 @@ vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left wind
 vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
 vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
 vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
+vim.keymap.set("n", "<leader>/", require("telescope.builtin").live_grep, { desc = "Live grep", noremap = true })
 vim.keymap.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list" })
 vim.keymap.set("n", "<leader>GG", ":lua require('gradle').telescope.pick_tasks()<CR>", { silent = true })
 vim.keymap.set("n", "<leader>GR", ":lua require('gradle').tasks.refresh_tasks_async()<CR>", { silent = true })
@@ -412,7 +415,6 @@ vim.keymap.set("n", "<leader>c", require("Comment.api").toggle.linewise.current,
 vim.keymap.set("n", "<leader>e", ":Yazi<CR>")
 vim.keymap.set("n", "<leader>f", require("telescope.builtin").find_files, { desc = "Find files", noremap = true })
 vim.keymap.set("n", "<leader>g", ":LazyGit<CR>")
-vim.keymap.set("n", "<leader>l", require("telescope.builtin").live_grep, { desc = "Live grep", noremap = true })
 vim.keymap.set("n", "<leader>o", ":update<CR> :source<CR>")
 vim.keymap.set("n", "<leader>q", ":bdelete<CR>")
 vim.keymap.set("n", "<leader>r", ":lua ToggleScooter()<CR>", { silent = true, desc = "Scooter" })
