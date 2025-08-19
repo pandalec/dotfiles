@@ -251,18 +251,16 @@ require("bufferline").setup({
 
 -- Setup various plugins
 require("nvim-autopairs").setup({})
+-- require("vim._extui").enable({})
 require("yazi").setup()
 require("nvim-surround").setup({})
 require("Comment").setup()
 require("catppuccin").setup({
+	auto_integrations = true,
 	flavour = "auto",
-	background = {
-		light = "latte",
-		dark = "mocha",
-	},
-	-- transparent_background = true, -- disables setting the background color.
+	background = { light = "latte", dark = "mocha" },
 })
-vim.cmd("colorscheme catppuccin")
+vim.cmd.colorscheme("catppuccin")
 
 -- Setup lazygit
 function EditLineFromLazygit(file_path, line)

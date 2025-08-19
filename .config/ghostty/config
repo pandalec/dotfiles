@@ -6,3 +6,4 @@ keybind = ctrl+shift+l=next_tab
 keybind = performable:ctrl+c=copy_to_clipboard
 theme = dark:catppuccin-mocha,light:catppuccin-latte
 window-padding-balance = true
+cursor-invert-fg-bg = true
