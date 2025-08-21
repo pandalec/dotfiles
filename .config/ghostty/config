@@ -1,11 +1,10 @@
-# font-family = MesloLGS Nerd Font Mono
 bold-is-bright = true
+cursor-invert-fg-bg = true
 font-size = 12
 keybind = ctrl+shift+h=previous_tab
 keybind = ctrl+shift+l=next_tab
 keybind = performable:ctrl+c=copy_to_clipboard
+mouse-hide-while-typing = true
+mouse-scroll-multiplier = 1
 theme = dark:catppuccin-mocha,light:catppuccin-latte
 window-padding-balance = true
-cursor-invert-fg-bg = true
-mouse-scroll-multiplier = 1
-mouse-hide-while-typing = true
