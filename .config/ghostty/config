@@ -7,3 +7,5 @@ keybind = performable:ctrl+c=copy_to_clipboard
 theme = dark:catppuccin-mocha,light:catppuccin-latte
 window-padding-balance = true
 cursor-invert-fg-bg = true
+mouse-scroll-multiplier = 1
+mouse-hide-while-typing = true

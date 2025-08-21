@@ -24,11 +24,15 @@ end
 
 if type -q eza
     # @fish-lsp-disable-next-line
-    alias ll="eza -l -g --icons --octal-permissions --git --group-directories-first"
+    alias ll="eza -l -g --icons --octal-permissions --no-permissions --git --group-directories-first"
     # @fish-lsp-disable-next-line
     alias la="ll -a"
     # @fish-lsp-disable-next-line
-    alias ls="eza -1 --icons --octal-permissions --git --group-directories-first"
+    alias lt="ll -T"
+    # @fish-lsp-disable-next-line
+    alias lta="lt -a"
+    # @fish-lsp-disable-next-line
+    alias ls="eza -1 --icons --octal-permissions --no-permissions --git --group-directories-first"
 end
 
 if type -q kubectl
