@@ -250,7 +250,7 @@ require("toggleterm").setup({
 
 local Terminal = require("toggleterm.terminal").Terminal
 
-local scooter = Terminal:new({ -- scooter terminal
+local Scooter = Terminal:new({ -- scooter terminal
 	cmd = "scooter",
 	direction = "float",
 	float_opts = { border = "curved", title_pos = "center" },
@@ -258,35 +258,35 @@ local scooter = Terminal:new({ -- scooter terminal
 })
 
 _G.ToggleScooter = function()
-	scooter:toggle()
+	Scooter:toggle()
 end
 
-local floating_terminal = Terminal:new({ -- floating terminal
+local FloatingTerminal = Terminal:new({ -- floating terminal
 	direction = "float",
 	float_opts = { border = "curved", title_pos = "center" },
 	name = "floating_terminal",
 })
 
 _G.ToggleFloatingTerminal = function()
-	floating_terminal:toggle()
+	FloatingTerminal:toggle()
 end
 
-local horizontal_terminal = Terminal:new({ -- horizontal terminal
+local HorizontalTerminal = Terminal:new({ -- horizontal terminal
 	name = "terminal",
 	direction = "horizontal",
 })
 
 _G.ToggleHorizontalTerminal = function()
-	horizontal_terminal:toggle()
+	HorizontalTerminal:toggle()
 end
 
-local vertical_terminal = Terminal:new({ -- vertical terminal
+local VerticalTerminal = Terminal:new({ -- vertical terminal
 	name = "terminal",
 	direction = "vertical",
 })
 
 _G.ToggleVerticalTerminal = function()
-	vertical_terminal:toggle()
+	VerticalTerminal:toggle()
 end
 
 function _G.SetTerminalKeymaps() -- Configure terminal keymaps
