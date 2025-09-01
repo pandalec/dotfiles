@@ -37,7 +37,6 @@ vim.pack.add({
 	{ src = "https://github.com/akinsho/toggleterm.nvim" }, -- enables scooter and terminal function
 	{ src = "https://github.com/catppuccin/nvim" }, -- fav theme
 	{ src = "https://github.com/gbprod/substitute.nvim" }, -- substitute commands
-	{ src = "https://github.com/kdheepak/lazygit.nvim" }, -- enables lazygit
 	{ src = "https://github.com/kylechui/nvim-surround" }, -- surround add, delete and replace
 	{ src = "https://github.com/lewis6991/gitsigns.nvim.git" }, -- git changes in sign column
 	{ src = "https://github.com/mason-org/mason-lspconfig.nvim" }, -- replace system lsp/linter installations
@@ -98,16 +97,13 @@ require("mason-tool-installer").setup({
 })
 
 -- Setup lsp
-vim.filetype.add({ -- Enable ansible lsp for yml files
+vim.filetype.add({
+	pattern = {
+		[".*/playbooks/.*%.ya?ml"] = "yaml.ansible",
+		[".*/roles/.+/handlers/.*%.ya?ml"] = "yaml.ansible",
+		[".*/roles/.+/tasks/.*%.ya?ml"] = "yaml.ansible",
+	},
 	extension = {
-		yml = function(_, bufnr)
-			local path = vim.api.nvim_buf_get_name(bufnr)
-			if path:match("playbooks/") or path:match("roles/.*/tasks/") then
-				return "yaml.ansible"
-			else
-				return "yaml"
-			end
-		end,
 		kts = "kotlin",
 	},
 })
@@ -250,10 +246,32 @@ require("toggleterm").setup({
 
 local Terminal = require("toggleterm.terminal").Terminal
 
+local FloatingTerminalOpts = {
+	border = "curved",
+	title_pos = "center",
+	width = function()
+		return vim.o.columns
+	end,
+	height = function()
+		return vim.o.lines - 3 -- adding spoace for border
+	end,
+}
+
+local Lazygit = Terminal:new({ -- lazygit terminal
+	cmd = "lazygit",
+	direction = "float",
+	float_opts = FloatingTerminalOpts,
+	name = "lazygit",
+})
+
+_G.ToggleLazygit = function()
+	Lazygit:toggle()
+end
+
 local Scooter = Terminal:new({ -- scooter terminal
 	cmd = "scooter",
 	direction = "float",
-	float_opts = { border = "curved", title_pos = "center" },
+	float_opts = FloatingTerminalOpts,
 	name = "scooter",
 })
 
@@ -263,8 +281,9 @@ end
 
 local FloatingTerminal = Terminal:new({ -- floating terminal
 	direction = "float",
-	float_opts = { border = "curved", title_pos = "center" },
+	float_opts = FloatingTerminalOpts,
 	name = "floating_terminal",
+	env = { FISH_ENABLE_AUTOLOG = "1" },
 })
 
 _G.ToggleFloatingTerminal = function()
@@ -274,6 +293,7 @@ end
 local HorizontalTerminal = Terminal:new({ -- horizontal terminal
 	name = "terminal",
 	direction = "horizontal",
+	env = { FISH_ENABLE_AUTOLOG = "1" },
 })
 
 _G.ToggleHorizontalTerminal = function()
@@ -283,6 +303,7 @@ end
 local VerticalTerminal = Terminal:new({ -- vertical terminal
 	name = "terminal",
 	direction = "vertical",
+	env = { FISH_ENABLE_AUTOLOG = "1" },
 })
 
 _G.ToggleVerticalTerminal = function()
@@ -303,13 +324,28 @@ end
 vim.cmd("autocmd! TermOpen term://*toggleterm#* lua SetTerminalKeymaps()")
 
 -- Setup telescope
+local select_one_or_multi = function(prompt_bufnr)
+	local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+	local multi = picker:get_multi_selection()
+	if not vim.tbl_isempty(multi) then
+		require("telescope.actions").close(prompt_bufnr)
+		for _, j in pairs(multi) do
+			if j.path ~= nil then
+				vim.cmd(string.format("%s %s", "edit", j.path))
+			end
+		end
+	else
+		require("telescope.actions").select_default(prompt_bufnr)
+	end
+end
+
 require("telescope").setup({
 	defaults = {
 		layout_config = { horizontal = { width = { padding = 0 }, height = { padding = 0 } } },
 		path_display = { "truncate" },
+		mappings = { i = { ["<CR>"] = select_one_or_multi } },
 	},
 })
-require("telescope").load_extension("lazygit")
 
 -- Setup auto session
 require("auto-session").setup({
@@ -317,7 +353,12 @@ require("auto-session").setup({
 })
 
 -- Setup gradle
-require("gradle").setup({ keymaps = false, load_on_startup = true, disable_startup_notification = true })
+require("gradle").setup({
+	keymaps = false,
+	load_on_startup = true,
+	disable_startup_notification = true,
+	floating_terminal_opts = FloatingTerminalOpts,
+})
 
 -- Keymaps
 local k = vim.keymap
@@ -347,7 +388,7 @@ k.set("n", "<leader>TV", ":lua ToggleVerticalTerminal()<CR>", { silent = true, d
 k.set("n", "<leader>b", require("telescope.builtin").buffers, { desc = "Find buffers", noremap = true })
 k.set("n", "<leader>e", ":Yazi<CR>")
 k.set("n", "<leader>f", require("telescope.builtin").find_files, { desc = "Find files", noremap = true })
-k.set("n", "<leader>g", ":LazyGit<CR>")
+k.set("n", "<leader>g", ":lua ToggleLazygit()<CR>", { silent = true, desc = "Toogle Lazygit" })
 k.set("n", "<leader>o", ":update<CR> :source<CR>")
 k.set("n", "<leader>q", ":bdelete<CR>")
 k.set("n", "<leader>r", ":lua ToggleScooter()<CR>", { silent = true, desc = "Toogle Scooter" })
