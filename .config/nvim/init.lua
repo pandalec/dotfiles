@@ -1,5 +1,5 @@
 -- Set nvim options
-vim.diagnostic.config({ update_in_insert = true })
+vim.diagnostic.config({ update_in_insert = true, virtual_text = true })
 vim.g.have_nerd_font = true
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -25,25 +25,22 @@ vim.opt.termguicolors = true
 vim.api.nvim_create_autocmd("TextYankPost", {
 	desc = "Highlight when yanking (copying) text",
 	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
-	callback = function()
-		vim.hl.on_yank()
-	end,
+	callback = function() vim.hl.on_yank() end,
 })
 
 -- Add plugins via vim.pack (nvim 0.12+)
 vim.pack.add({
-	{ src = "https://github.com/Saghen/blink.cmp", version = "v1.6.0" }, -- try out another autocomplete
-	{ src = "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim" }, -- replace system lsp/linter installations
-	{ src = "https://github.com/akinsho/toggleterm.nvim" }, -- enables scooter and terminal function
+	{ src = "https://github.com/Saghen/blink.cmp", version = "v1.6.0" }, -- autocomplete
+	{ src = "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim" }, -- replace arch lsp/linter installations
+	{ src = "https://github.com/akinsho/toggleterm.nvim" }, -- enables terminal functions
 	{ src = "https://github.com/catppuccin/nvim" }, -- fav theme
 	{ src = "https://github.com/gbprod/substitute.nvim" }, -- substitute commands
 	{ src = "https://github.com/kylechui/nvim-surround" }, -- surround add, delete and replace
 	{ src = "https://github.com/lewis6991/gitsigns.nvim.git" }, -- git changes in sign column
-	{ src = "https://github.com/mason-org/mason-lspconfig.nvim" }, -- replace system lsp/linter installations
-	{ src = "https://github.com/mason-org/mason.nvim" }, -- replace system lsp/linter installations
+	{ src = "https://github.com/mason-org/mason-lspconfig.nvim" }, -- replace arch lsp/linter installations
+	{ src = "https://github.com/mason-org/mason.nvim" }, -- replace arch lsp/linter installations
 	{ src = "https://github.com/mg979/vim-visual-multi.git" }, -- add multi cursor support
-	{ src = "https://github.com/mikavilpas/yazi.nvim" }, -- enables yazi file manager
-	{ src = "https://github.com/neovim/nvim-lspconfig" }, -- default config for lsp's
+	{ src = "https://github.com/neovim/nvim-lspconfig" }, -- default config for lsp
 	{ src = "https://github.com/numToStr/Comment.nvim" }, -- enables comment function
 	{ src = "https://github.com/nvim-lua/plenary.nvim" }, -- dependency for yazi
 	{ src = "https://github.com/nvim-telescope/telescope.nvim" }, -- fuzzy file, grep and buffer search
@@ -52,7 +49,7 @@ vim.pack.add({
 	{ src = "https://github.com/pandalec/gradle.nvim" }, -- my gradle plugin :)
 	{ src = "https://github.com/rmagatti/auto-session" }, -- auto save and restore sessions
 	{ src = "https://github.com/sschleemilch/slimline.nvim" }, -- slim statusline
-	{ src = "https://github.com/stevearc/conform.nvim" }, -- add format
+	{ src = "https://github.com/stevearc/conform.nvim" }, -- add auto formatter
 	{ src = "https://github.com/willothy/nvim-cokeline" }, -- custom bufferline
 	{ src = "https://github.com/windwp/nvim-autopairs" }, -- autopairs for chars
 })
@@ -200,7 +197,6 @@ require("cokeline").setup()
 require("nvim-autopairs").setup({})
 require("nvim-surround").setup({})
 require("substitute").setup()
-require("yazi").setup()
 
 -- Setup catpuccin
 require("catppuccin").setup({
@@ -230,6 +226,38 @@ function EditFromLazygit(file_path)
 	end
 end
 
+-- Setup Yazi
+function EditFromYazi(paths_str)
+	local files = {}
+	for p in string.gmatch(paths_str, "%S+") do
+		table.insert(files, p)
+	end
+	if #files == 0 then return end
+	local path = vim.fn.expand("%:p")
+	if path ~= files[1] then vim.cmd("e " .. files[1]) end
+	for i = 2, #files do
+		vim.cmd("tabedit " .. files[i])
+	end
+end
+
+function VsplitFromYazi(file_path)
+	local path = vim.fn.expand("%:p")
+	if path == file_path then
+		return
+	else
+		vim.cmd("vsplit " .. file_path)
+	end
+end
+
+function SplitFromYazi(file_path)
+	local path = vim.fn.expand("%:p")
+	if path == file_path then
+		return
+	else
+		vim.cmd("split " .. file_path)
+	end
+end
+
 -- Setup toggleterm
 require("toggleterm").setup({
 	shade_terminals = false,
@@ -249,12 +277,8 @@ local Terminal = require("toggleterm.terminal").Terminal
 local FloatingTerminalOpts = {
 	border = "curved",
 	title_pos = "center",
-	width = function()
-		return vim.o.columns
-	end,
-	height = function()
-		return vim.o.lines - 3 -- adding spoace for border
-	end,
+	width = function() return vim.o.columns - 10 end,
+	height = function() return vim.o.lines - 5 end,
 }
 
 local Lazygit = Terminal:new({ -- lazygit terminal
@@ -264,8 +288,28 @@ local Lazygit = Terminal:new({ -- lazygit terminal
 	name = "lazygit",
 })
 
-_G.ToggleLazygit = function()
-	Lazygit:toggle()
+_G.ToggleLazygit = function() Lazygit:toggle() end
+
+_G.ToggleYazi = function()
+	Terminal:new({
+		cmd = "yazi",
+		direction = "float",
+		float_opts = FloatingTerminalOpts,
+		name = "yazi",
+	}):open()
+end
+
+_G.ToggleYaziBufDir = function()
+	local dir = vim.fn.expand("%:p:h")
+	if dir == "" then dir = vim.loop.cwd() end
+	-- if open, close first; then reopen with overridden dir
+	Terminal:new({
+		cmd = "yazi",
+		direction = "float",
+		float_opts = FloatingTerminalOpts,
+		name = "yazi",
+		dir = dir,
+	}):open()
 end
 
 local Scooter = Terminal:new({ -- scooter terminal
@@ -275,20 +319,17 @@ local Scooter = Terminal:new({ -- scooter terminal
 	name = "scooter",
 })
 
-_G.ToggleScooter = function()
-	Scooter:toggle()
-end
+_G.ToggleScooter = function() Scooter:toggle() end
 
 local FloatingTerminal = Terminal:new({ -- floating terminal
 	direction = "float",
 	float_opts = FloatingTerminalOpts,
 	name = "floating_terminal",
+	auto_scroll = false,
 	env = { FISH_ENABLE_AUTOLOG = "1" },
 })
 
-_G.ToggleFloatingTerminal = function()
-	FloatingTerminal:toggle()
-end
+_G.ToggleFloatingTerminal = function() FloatingTerminal:toggle() end
 
 local HorizontalTerminal = Terminal:new({ -- horizontal terminal
 	name = "terminal",
@@ -296,9 +337,7 @@ local HorizontalTerminal = Terminal:new({ -- horizontal terminal
 	env = { FISH_ENABLE_AUTOLOG = "1" },
 })
 
-_G.ToggleHorizontalTerminal = function()
-	HorizontalTerminal:toggle()
-end
+_G.ToggleHorizontalTerminal = function() HorizontalTerminal:toggle() end
 
 local VerticalTerminal = Terminal:new({ -- vertical terminal
 	name = "terminal",
@@ -306,9 +345,7 @@ local VerticalTerminal = Terminal:new({ -- vertical terminal
 	env = { FISH_ENABLE_AUTOLOG = "1" },
 })
 
-_G.ToggleVerticalTerminal = function()
-	VerticalTerminal:toggle()
-end
+_G.ToggleVerticalTerminal = function() VerticalTerminal:toggle() end
 
 function _G.SetTerminalKeymaps() -- Configure terminal keymaps
 	local opts = { buffer = 0 }
@@ -330,9 +367,7 @@ local select_one_or_multi = function(prompt_bufnr)
 	if not vim.tbl_isempty(multi) then
 		require("telescope.actions").close(prompt_bufnr)
 		for _, j in pairs(multi) do
-			if j.path ~= nil then
-				vim.cmd(string.format("%s %s", "edit", j.path))
-			end
+			if j.path ~= nil then vim.cmd(string.format("%s %s", "edit", j.path)) end
 		end
 	else
 		require("telescope.actions").select_default(prompt_bufnr)
@@ -341,7 +376,7 @@ end
 
 require("telescope").setup({
 	defaults = {
-		layout_config = { horizontal = { width = { padding = 0 }, height = { padding = 0 } } },
+		-- layout_config = { horizontal = { width = { padding = 0 }, height = { padding = 0 } } },
 		path_display = { "truncate" },
 		mappings = { i = { ["<CR>"] = select_one_or_multi } },
 	},
@@ -349,7 +384,7 @@ require("telescope").setup({
 
 -- Setup auto session
 require("auto-session").setup({
-	suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+	suppressed_dirs = { "~/", "~/Documents", "~/Downloads", "/" },
 })
 
 -- Setup gradle
@@ -365,45 +400,49 @@ local k = vim.keymap
 k.set("", "<ScrollWheelDown>", "2<C-E>", { noremap = true, silent = true }) -- fix ghostty mouse lags in nvim
 k.set("", "<ScrollWheelUp>", "2<C-Y>", { noremap = true, silent = true }) -- fix ghostty mouse lags in nvim
 k.set("", "<Space>", "<Nop>", { desc = "Ignore space", silent = true, noremap = true }) -- hopefully fixing space as leader issue
-k.set("", "<leader>c", ":echo 'Use commands...'<CR>")
-k.set("n", "<A-Left>", "<Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer" })
-k.set("n", "<A-Right>", "<Plug>(cokeline-focus-next)", { desc = "Go to next buffer" })
-k.set("n", "<A-S-Left>", "<Plug>(cokeline-switch-prev)", { desc = "Go to previous buffer" })
-k.set("n", "<A-S-Right>", "<Plug>(cokeline-switch-next)", { desc = "Go to next buffer" })
-k.set("n", "<A-S-h>", "<Plug>(cokeline-switch-prev)", { desc = "Go to previous buffer" })
-k.set("n", "<A-S-l>", "<Plug>(cokeline-switch-next)", { desc = "Go to next buffer" })
-k.set("n", "<A-h>", "<Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer" })
-k.set("n", "<A-l>", "<Plug>(cokeline-focus-next)", { desc = "Go to next buffer" })
-k.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
-k.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
-k.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
-k.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
-k.set("n", "<leader>/", require("telescope.builtin").live_grep, { desc = "Live grep", noremap = true })
-k.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list" })
-k.set("n", "<leader>GG", ":lua require('gradle').telescope.pick_tasks()<CR>", { silent = true })
-k.set("n", "<leader>GR", ":lua require('gradle').tasks.refresh_tasks_async()<CR>", { silent = true })
-k.set("n", "<leader>GW", ":lua require('gradle').terminal.toggle()<CR>", { silent = true })
-k.set("n", "<leader>TH", ":lua ToggleHorizontalTerminal()<CR>", { silent = true, desc = "Toggle horizontal terminal" })
-k.set("n", "<leader>TV", ":lua ToggleVerticalTerminal()<CR>", { silent = true, desc = "Toggle vertical terminal" })
-k.set("n", "<leader>b", require("telescope.builtin").buffers, { desc = "Find buffers", noremap = true })
-k.set("n", "<leader>e", ":Yazi<CR>")
-k.set("n", "<leader>f", require("telescope.builtin").find_files, { desc = "Find files", noremap = true })
-k.set("n", "<leader>g", ":lua ToggleLazygit()<CR>", { silent = true, desc = "Toogle Lazygit" })
-k.set("n", "<leader>o", ":update<CR> :source<CR>")
-k.set("n", "<leader>q", ":bdelete<CR>")
-k.set("n", "<leader>r", ":lua ToggleScooter()<CR>", { silent = true, desc = "Toogle Scooter" })
-k.set("n", "<leader>t", ":lua ToggleFloatingTerminal()<CR>", { silent = true, desc = "Toggle floating terminal" })
-k.set("n", "<leader>w", ":write<CR>")
-k.set("n", "S", require("substitute").eol, { noremap = true })
-k.set("n", "s", require("substitute").operator, { noremap = true })
-k.set("n", "ss", require("substitute").line, { noremap = true })
-k.set("v", "<A-Left>", "<Esc>:bprevious<CR>", { desc = "Go to previous buffer" })
-k.set("v", "<A-Right>", "<Esc>:bnext<CR>", { desc = "Go to next buffer" })
-k.set("v", "<A-h>", "<Esc>:bprevious<CR>", { desc = "Go to previous buffer" })
-k.set("v", "<A-l>", "<Esc>:bnext<CR>", { desc = "Go to next buffer" })
-k.set("v", "<leader>w", "<Esc>:write<CR>")
-k.set("v", "H", "<gv", { desc = "Move line(s) to the left" })
-k.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down" })
-k.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up" })
-k.set("v", "L", ">gv", { desc = "Move line(s) to the right" })
-k.set("x", "s", require("substitute").visual, { noremap = true })
+k.set("n", "<A-Left>", "<Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer", silent = true, noremap = true })
+k.set("n", "<A-Right>", "<Plug>(cokeline-focus-next)", { desc = "Go to next buffer", silent = true, noremap = true })
+k.set("n", "<A-S-Left>", "<Plug>(cokeline-switch-prev)", { desc = "Move buffer left", silent = true, noremap = true })
+k.set("n", "<A-S-Right>", "<Plug>(cokeline-switch-next)", { desc = "Move buffer right", silent = true, noremap = true })
+k.set("n", "<A-S-h>", "<Plug>(cokeline-switch-prev)", { desc = "Move buffer left", silent = true, noremap = true })
+k.set("n", "<A-S-l>", "<Plug>(cokeline-switch-next)", { desc = "Move buffer right", silent = true, noremap = true })
+k.set("n", "<A-h>", "<Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer", silent = true, noremap = true })
+k.set("n", "<A-l>", "<Plug>(cokeline-focus-next)", { desc = "Go to next buffer", silent = true, noremap = true })
+k.set("n", "<A-w>", ":bdelete<CR>", { desc = "Close buffer", silent = true, noremap = true })
+k.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window", silent = true, noremap = true })
+k.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window", silent = true, noremap = true })
+k.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window", silent = true, noremap = true })
+k.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window", silent = true, noremap = true })
+k.set("n", "<leader>/", require("telescope.builtin").live_grep, { desc = "Live grep", silent = true, noremap = true })
+k.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list", silent = true, noremap = true })
+k.set("n", "<leader>E", ":lua ToggleYazi()<CR>", { desc = "Toogle Yazi in Working dir", silent = true, noremap = true })
+k.set("n", "<leader>GG", ":lua require('gradle').telescope.pick_tasks()<CR>", { desc = "Gradle taks", silent = true, noremap = true })
+k.set("n", "<leader>GR", ":lua require('gradle').tasks.refresh_tasks_async()<CR>", { desc = "Refresh Gradle", silent = true, noremap = true })
+k.set("n", "<leader>GW", ":lua require('gradle').terminal.toggle()<CR>", { desc = "Gradle terminal", silent = true, noremap = true })
+k.set("n", "<leader>TH", ":lua ToggleHorizontalTerminal()<CR>", { desc = "Toggle horizontal terminal", silent = true, noremap = true })
+k.set("n", "<leader>TV", ":lua ToggleVerticalTerminal()<CR>", { desc = "Toggle vertical terminal", silent = true, noremap = true })
+k.set("n", "<leader>b", require("telescope.builtin").buffers, { desc = "Find buffers", silent = true, noremap = true })
+k.set("n", "<leader>e", ":lua ToggleYaziBufDir()<CR>", { desc = "Toogle Yazi in Buffer dir", silent = true, noremap = true })
+k.set("n", "<leader>f", require("telescope.builtin").find_files, { desc = "Find files", silent = true, noremap = true })
+k.set("n", "<leader>g", ":lua ToggleLazygit()<CR>", { desc = "Toogle Lazygit", silent = true, noremap = true })
+k.set("n", "<leader>o", ":update<CR> :source<CR>", { desc = "Update and source config", silent = true, noremap = true })
+k.set("n", "<leader>r", ":lua ToggleScooter()<CR>", { desc = "Toogle Scooter", silent = true, noremap = true })
+k.set("n", "<leader>t", ":lua ToggleFloatingTerminal()<CR>", { desc = "Toggle floating terminal", silent = true, noremap = true })
+k.set("n", "<leader>w", ":write<CR>", { desc = "Write buffer", silent = true, noremap = true })
+k.set("n", "S", require("substitute").eol, { desc = "Subsitute eol", silent = true, noremap = true })
+k.set("n", "s", require("substitute").operator, { desc = "Subsitute operator", silent = true, noremap = true })
+k.set("n", "ss", require("substitute").line, { desc = "Subsitute line", silent = true, noremap = true })
+k.set("v", "<A-Left>", "<Esc><Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer", silent = true, noremap = true })
+k.set("v", "<A-Right>", "<Esc><Plug>(cokeline-focus-next)", { desc = "Go to next buffer", silent = true, noremap = true })
+k.set("v", "<A-S-Left>", "<Esc><Plug>(cokeline-switch-prev)", { desc = "Move buffer left", silent = true, noremap = true })
+k.set("v", "<A-S-Right>", "<Esc><Plug>(cokeline-switch-next)", { desc = "Move buffer right", silent = true, noremap = true })
+k.set("v", "<A-S-h>", "<Esc><Plug>(cokeline-switch-prev)", { desc = "Move buffer left", silent = true, noremap = true })
+k.set("v", "<A-S-l>", "<Esc><Plug>(cokeline-switch-next)", { desc = "Move buffer right", silent = true, noremap = true })
+k.set("v", "<A-h>", "<Esc><Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer", silent = true, noremap = true })
+k.set("v", "<A-l>", "<Esc><Plug>(cokeline-focus-next)", { desc = "Go to next buffer", silent = true, noremap = true })
+k.set("v", "<A-w>", "<Esc>:bdelete<CR>", { desc = "Close buffer", silent = true, noremap = true })
+k.set("v", "H", "<gv", { desc = "Move line(s) to the left", silent = true, noremap = true })
+k.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down", silent = true, noremap = true })
+k.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up", silent = true, noremap = true })
+k.set("v", "L", ">gv", { desc = "Move line(s) to the right", silent = true, noremap = true })
+k.set("x", "s", require("substitute").visual, { desc = "Subsitute visual", silent = true, noremap = true })

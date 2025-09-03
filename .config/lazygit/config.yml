@@ -5,6 +5,11 @@ os:
 
 gui:
   skipDiscardChangeWarning: true
+  theme:
+    selectedLineBgColor:
+      - black
+
+promptToReturnFromSubprocess: false
 
 git:
   autoForwardBranches: allBranches
