@@ -295,20 +295,27 @@ _G.ToggleYazi = function()
 		cmd = "yazi",
 		direction = "float",
 		float_opts = FloatingTerminalOpts,
-		name = "yazi",
+		close_on_exit = true,
+		on_close = function(term)
+			if term.job_id and term.job_id > 0 then
+				pcall(vim.fn.jobstop, term.job_id) -- kill hidden/leftover job
+			end
+		end,
 	}):open()
 end
 
 _G.ToggleYaziBufDir = function()
-	local dir = vim.fn.expand("%:p:h")
-	if dir == "" then dir = vim.loop.cwd() end
-	-- if open, close first; then reopen with overridden dir
 	Terminal:new({
 		cmd = "yazi",
 		direction = "float",
 		float_opts = FloatingTerminalOpts,
-		name = "yazi",
-		dir = dir,
+		dir = (vim.fn.expand("%:p:h") ~= "" and vim.fn.expand("%:p:h") or vim.loop.cwd()),
+		close_on_exit = true,
+		on_close = function(term)
+			if term.job_id and term.job_id > 0 then
+				pcall(vim.fn.jobstop, term.job_id) -- kill hidden/leftover job
+			end
+		end,
 	}):open()
 end
 
