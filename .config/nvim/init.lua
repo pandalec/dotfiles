@@ -42,7 +42,7 @@ vim.pack.add({
 	{ src = "https://github.com/mg979/vim-visual-multi.git" }, -- add multi cursor support
 	{ src = "https://github.com/neovim/nvim-lspconfig" }, -- default config for lsp
 	{ src = "https://github.com/numToStr/Comment.nvim" }, -- enables comment function
-	{ src = "https://github.com/nvim-lua/plenary.nvim" }, -- dependency for yazi
+	{ src = "https://github.com/nvim-lua/plenary.nvim" }, -- dependency for telescope
 	{ src = "https://github.com/nvim-telescope/telescope.nvim" }, -- fuzzy file, grep and buffer search
 	{ src = "https://github.com/nvim-tree/nvim-web-devicons" }, -- dependency for bufferline
 	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" }, -- treesitter
@@ -63,6 +63,7 @@ require("mason-tool-installer").setup({
 		"ansiblels",
 		"bashls",
 		"black", -- python format
+		"codespell",
 		"cssls",
 		"docker_compose_language_service",
 		"docker_language_server",
@@ -105,7 +106,7 @@ vim.filetype.add({
 	},
 })
 
-vim.lsp.config("lua_ls", { -- Configure lua_ls that it wont show vim errors
+vim.lsp.config("lua_ls", { -- Configure lua_ls that it won't show vim errors
 	settings = {
 		Lua = { diagnostics = { globals = { "vim" } }, telemetry = { enable = false } },
 	},
@@ -116,6 +117,7 @@ vim.lsp.config("kotlin_language_server", { filetypes = { "kotlin", "kt", "kts" }
 -- Setup conform auto-formatter
 require("conform").setup({
 	formatters_by_ft = {
+		["*"] = { "codespell" },
 		ansible = { "prettier", "ansible-lint", stop_after_first = true },
 		bash = { "shfmt" },
 		css = { "prettier" },
@@ -129,8 +131,8 @@ require("conform").setup({
 		markdown = { "prettier" },
 		python = { "black" },
 		rust = { "rustfmt" },
-		toml = { "taplo" },
 		terraform = { "terraform_fmt" },
+		toml = { "taplo" },
 		yaml = { "prettier" },
 	},
 	format_on_save = { timeout_ms = 5000, lsp_format = "fallback" },
@@ -193,10 +195,78 @@ require("slimline").setup({
 
 -- Setup various plugins
 require("Comment").setup()
-require("cokeline").setup()
 require("nvim-autopairs").setup({})
 require("nvim-surround").setup({})
 require("substitute").setup()
+
+-- Setup cokeline
+-- Hide ToggleTerm float if active, then switch buffer
+local function safe_buffer_switch(bufnr)
+	local win = vim.api.nvim_get_current_win()
+	local cfg = vim.api.nvim_win_get_config(win)
+
+	-- If current window is floating
+	if cfg.relative ~= "" then
+		-- If it’s a toggleterm terminal, hide it
+		if vim.bo.buftype == "terminal" then
+			local ok, Terminal = pcall(require, "toggleterm.terminal")
+			if ok then
+				local term = Terminal.get_or_create_term({ bufnr = vim.api.nvim_get_current_buf() })
+				if term and term:is_open() then term:toggle() end
+			end
+		end
+
+		-- Redirect focus to the first non-floating window
+		for _, w in ipairs(vim.api.nvim_list_wins()) do
+			local wc = vim.api.nvim_win_get_config(w)
+			if wc.relative == "" then
+				vim.api.nvim_set_current_win(w)
+				break
+			end
+		end
+	end
+
+	-- Finally, switch to the buffer
+	vim.api.nvim_set_current_buf(bufnr)
+end
+
+local get_hex = require("cokeline.hlgroups").get_hl_attr
+
+require("cokeline").setup({
+	show_if_buffers_are_at_least = 2,
+	default_hl = {
+		fg = function(buffer)
+			if buffer.is_focused then
+				return get_hex("ColorColumn", "fg")
+			else
+				return get_hex("CokelineBackground", "fg")
+			end
+		end,
+		bg = function(buffer)
+			if buffer.is_focused then
+				return get_hex("Normal", "bg")
+			else
+				return get_hex("CokelineBackground", "bg")
+			end
+		end,
+	},
+	components = {
+		{
+			text = function(buffer) return " " .. buffer.devicon.icon end,
+			fg = function(buffer) return buffer.devicon.color end,
+			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+		},
+		{
+			text = function(buffer) return buffer.unique_prefix end,
+			fg = get_hex("Comment", "fg"),
+			italic = true,
+			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+		},
+		{ text = function(buffer) return buffer.filename .. " " end, on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end },
+		{ text = "", on_click = function(_, _, _, _, buffer) buffer:delete() end },
+		{ text = " " },
+	},
+})
 
 -- Setup catpuccin
 require("catppuccin").setup({
@@ -356,13 +426,10 @@ _G.ToggleVerticalTerminal = function() VerticalTerminal:toggle() end
 
 function _G.SetTerminalKeymaps() -- Configure terminal keymaps
 	local opts = { buffer = 0 }
-	vim.keymap.set("t", "<esc><esc>", [[<C-\><C-n>]], opts)
-	vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
 	vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
 	vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
 	vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
 	vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
-	vim.keymap.set("t", "<C-w>", [[<C-\><C-n><C-w>]], opts)
 end
 
 vim.cmd("autocmd! TermOpen term://*toggleterm#* lua SetTerminalKeymaps()")
@@ -383,7 +450,6 @@ end
 
 require("telescope").setup({
 	defaults = {
-		-- layout_config = { horizontal = { width = { padding = 0 }, height = { padding = 0 } } },
 		path_display = { "truncate" },
 		mappings = { i = { ["<CR>"] = select_one_or_multi } },
 	},
@@ -422,23 +488,23 @@ k.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window", sil
 k.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window", silent = true, noremap = true })
 k.set("n", "<leader>/", require("telescope.builtin").live_grep, { desc = "Live grep", silent = true, noremap = true })
 k.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list", silent = true, noremap = true })
-k.set("n", "<leader>E", ":lua ToggleYazi()<CR>", { desc = "Toogle Yazi in Working dir", silent = true, noremap = true })
+k.set("n", "<leader>E", ":lua ToggleYazi()<CR>", { desc = "Toggle Yazi in Working dir", silent = true, noremap = true })
 k.set("n", "<leader>GG", ":lua require('gradle').telescope.pick_tasks()<CR>", { desc = "Gradle taks", silent = true, noremap = true })
 k.set("n", "<leader>GR", ":lua require('gradle').tasks.refresh_tasks_async()<CR>", { desc = "Refresh Gradle", silent = true, noremap = true })
 k.set("n", "<leader>GW", ":lua require('gradle').terminal.toggle()<CR>", { desc = "Gradle terminal", silent = true, noremap = true })
 k.set("n", "<leader>TH", ":lua ToggleHorizontalTerminal()<CR>", { desc = "Toggle horizontal terminal", silent = true, noremap = true })
 k.set("n", "<leader>TV", ":lua ToggleVerticalTerminal()<CR>", { desc = "Toggle vertical terminal", silent = true, noremap = true })
 k.set("n", "<leader>b", require("telescope.builtin").buffers, { desc = "Find buffers", silent = true, noremap = true })
-k.set("n", "<leader>e", ":lua ToggleYaziBufDir()<CR>", { desc = "Toogle Yazi in Buffer dir", silent = true, noremap = true })
+k.set("n", "<leader>e", ":lua ToggleYaziBufDir()<CR>", { desc = "Toggle Yazi in Buffer dir", silent = true, noremap = true })
 k.set("n", "<leader>f", require("telescope.builtin").find_files, { desc = "Find files", silent = true, noremap = true })
-k.set("n", "<leader>g", ":lua ToggleLazygit()<CR>", { desc = "Toogle Lazygit", silent = true, noremap = true })
+k.set("n", "<leader>g", ":lua ToggleLazygit()<CR>", { desc = "Toggle Lazygit", silent = true, noremap = true })
 k.set("n", "<leader>o", ":update<CR> :source<CR>", { desc = "Update and source config", silent = true, noremap = true })
-k.set("n", "<leader>r", ":lua ToggleScooter()<CR>", { desc = "Toogle Scooter", silent = true, noremap = true })
+k.set("n", "<leader>r", ":lua ToggleScooter()<CR>", { desc = "Toggle Scooter", silent = true, noremap = true })
 k.set("n", "<leader>t", ":lua ToggleFloatingTerminal()<CR>", { desc = "Toggle floating terminal", silent = true, noremap = true })
 k.set("n", "<leader>w", ":write<CR>", { desc = "Write buffer", silent = true, noremap = true })
-k.set("n", "S", require("substitute").eol, { desc = "Subsitute eol", silent = true, noremap = true })
-k.set("n", "s", require("substitute").operator, { desc = "Subsitute operator", silent = true, noremap = true })
-k.set("n", "ss", require("substitute").line, { desc = "Subsitute line", silent = true, noremap = true })
+k.set("n", "S", require("substitute").eol, { desc = "Substitute eol", silent = true, noremap = true })
+k.set("n", "s", require("substitute").operator, { desc = "Substitute operator", silent = true, noremap = true })
+k.set("n", "ss", require("substitute").line, { desc = "Substitute line", silent = true, noremap = true })
 k.set("v", "<A-Left>", "<Esc><Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer", silent = true, noremap = true })
 k.set("v", "<A-Right>", "<Esc><Plug>(cokeline-focus-next)", { desc = "Go to next buffer", silent = true, noremap = true })
 k.set("v", "<A-S-Left>", "<Esc><Plug>(cokeline-switch-prev)", { desc = "Move buffer left", silent = true, noremap = true })
@@ -448,8 +514,10 @@ k.set("v", "<A-S-l>", "<Esc><Plug>(cokeline-switch-next)", { desc = "Move buffer
 k.set("v", "<A-h>", "<Esc><Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer", silent = true, noremap = true })
 k.set("v", "<A-l>", "<Esc><Plug>(cokeline-focus-next)", { desc = "Go to next buffer", silent = true, noremap = true })
 k.set("v", "<A-w>", "<Esc>:bdelete<CR>", { desc = "Close buffer", silent = true, noremap = true })
+k.set("v", "<leader>/", "y<ESC>:Telescope live_grep default_text=<c-r>0<CR>", { desc = "Live grep", silent = true, noremap = true })
+k.set("v", "<leader>f", "y<ESC>:Telescope find_files default_text=<c-r>0<CR>", { desc = "Live grep", silent = true, noremap = true })
 k.set("v", "H", "<gv", { desc = "Move line(s) to the left", silent = true, noremap = true })
 k.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down", silent = true, noremap = true })
 k.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up", silent = true, noremap = true })
 k.set("v", "L", ">gv", { desc = "Move line(s) to the right", silent = true, noremap = true })
-k.set("x", "s", require("substitute").visual, { desc = "Subsitute visual", silent = true, noremap = true })
+k.set("x", "s", require("substitute").visual, { desc = "Substitute visual", silent = true, noremap = true })
