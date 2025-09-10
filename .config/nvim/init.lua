@@ -404,7 +404,10 @@ local Scooter = Terminal:new({ -- scooter terminal
 
 _G.ToggleScooter = function() Scooter:toggle() end
 _G.ToggleScooterSearchText = function(search_text)
-	if not search_text or search_text == "" then Scooter:toggle() end
+	if not search_text or search_text == "" then
+		Scooter:toggle()
+		return
+	end
 	Scooter.cmd = "scooter " .. ScooterParams .. ' --search-text "' .. search_text:gsub('"', '\\"') .. '"'
 	Scooter:toggle()
 	Scooter.cmd = "scooter " .. ScooterParams

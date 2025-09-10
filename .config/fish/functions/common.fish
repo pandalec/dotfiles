@@ -63,7 +63,7 @@ function delete_unused
         echo $unused_packages
         echo "==="
         read -P "Press Enter to continue..."
-        echo $unused_packages | paru -Rns -
+        paru -Rns $unused_packages
     else
         echo "No unused packages to remove."
     end
