@@ -26,25 +26,30 @@ set_yazi() {
 	rm -f ${HOME}/.dotfiles/.config/yazi/*-[0-9]*
 }
 
+set_gsettings() {
+	gsettings set org.gnome.desktop.interface gtk-theme "${1}" # paru -S adw-gtk-theme
+	gsettings set org.gnome.desktop.interface color-scheme "${2}"
+}
+
 set_dark() {
 	set_scooter "Catppuccin Mocha"
 	set_fish "Catppuccin Mocha"
-	set_yazi "dark" || true
-	gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark' # paru -S adw-gtk-theme
-	gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+	set_yazi "dark"
+	set_gsettings "adw-gtk3-dark" "prefer-dark"
 }
 
 set_light() {
 	set_scooter "Catppuccin Latte"
-	set_fish "Catppuccin Latte" || true
-	set_yazi "light" || true
-	gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3'
-	gsettings set org.gnome.desktop.interface color-scheme 'default'
+	set_fish "Catppuccin Latte"
+	set_yazi "light"
+	set_gsettings "adw-gtk3" "default"
 }
 
-# Set additional settings
+# Set light / dark mode
 if [ "${1}" = "light" ]; then
 	set_light || true
+	echo "Light mode activated"
 elif [ "${1}" = "dark" ]; then
 	set_dark || true
+	echo "Dark mode activated"
 fi
