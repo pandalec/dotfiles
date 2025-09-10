@@ -313,12 +313,7 @@ _G.OpenFromExternal = function(command, file_path, line)
 	local current_path = vim.fn.expand("%:p")
 	local target_path = vim.fn.fnamemodify(file_path, ":p")
 
-	if current_path == target_path then
-		if line ~= nil then vim.api.nvim_win_set_cursor(0, { line, 0 }) end
-		return
-	end
-
-	vim.cmd(command .. " " .. vim.fn.fnameescape(file_path))
+	if current_path ~= target_path then vim.cmd(command .. " " .. vim.fn.fnameescape(file_path)) end
 
 	if line ~= nil then vim.api.nvim_win_set_cursor(0, { line, 0 }) end
 end
