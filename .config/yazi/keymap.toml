@@ -4,15 +4,15 @@
 
 [[mgr.prepend_keymap]]
 on = "v"
-run = '''shell --orphan -- nvim --server "$NVIM" --remote-send "<cmd>close<CR><cmd>lua VsplitFromYazi('$0')<CR>"'''
+run = '''shell --orphan -- nvim --server "$NVIM" --remote-send "<cmd>close<CR><cmd>lua OpenFromExternal(\"vsplit\", '$0')<CR>"'''
 desc = "Open in vertical split"
 
 [[mgr.prepend_keymap]]
 on = "s"
-run = '''shell --orphan -- nvim --server "$NVIM" --remote-send "<cmd>close<CR><cmd>lua SplitFromYazi('$0')<CR>"'''
+run = '''shell --orphan -- nvim --server "$NVIM" --remote-send "<cmd>close<CR><cmd>lua OpenFromExternal(\"split\", '$0')<CR>"'''
 desc = "Open in horizontal split"
 
 [[mgr.prepend_keymap]]
 on = "<Enter>"
-run = '''shell --orphan -- nvim --server "$NVIM" --remote-send "<cmd>close<CR><cmd>lua EditFromYazi(\"$*\")<CR>"'''
+run = '''shell --orphan -- nvim --server "$NVIM" --remote-send "<cmd>close<CR><cmd>lua EditMultiFromYazi(\"$*\")<CR>"'''
 desc = "Open selected or hovered in Neovim"

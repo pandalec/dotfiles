@@ -1,7 +1,7 @@
 ---
 os:
-  edit: "nvim --server $NVIM --remote-send '<cmd>close<cr><cmd>lua EditFromLazygit({{filename}})<CR>'"
-  editAtLine: "nvim --server $NVIM --remote-send '<cmd>close<CR><cmd>lua EditLineFromLazygit({{filename}},{{line}})<CR>'"
+  edit: 'nvim --server $NVIM --remote-send ''<cmd>close<CR><cmd>lua OpenFromExternal("e", {{filename}})<CR>'''
+  editAtLine: 'nvim --server $NVIM --remote-send ''<cmd>close<CR><cmd>lua OpenFromExternal("e", {{filename}}, {{line}})<CR>'''
 
 gui:
   skipDiscardChangeWarning: true

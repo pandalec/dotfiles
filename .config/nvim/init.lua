@@ -28,6 +28,15 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	callback = function() vim.hl.on_yank() end,
 })
 
+-- Enable spell only for text files
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "markdown", "text", "tex" },
+	callback = function()
+		vim.opt_local.spell = true
+		vim.opt_local.spelllang = { "de", "en_us" }
+	end,
+})
+
 -- Add plugins via vim.pack (nvim 0.12+)
 vim.pack.add({
 	{ src = "https://github.com/Saghen/blink.cmp", version = "v1.6.0" }, -- autocomplete
@@ -36,10 +45,10 @@ vim.pack.add({
 	{ src = "https://github.com/catppuccin/nvim" }, -- fav theme
 	{ src = "https://github.com/gbprod/substitute.nvim" }, -- substitute commands
 	{ src = "https://github.com/kylechui/nvim-surround" }, -- surround add, delete and replace
-	{ src = "https://github.com/lewis6991/gitsigns.nvim.git" }, -- git changes in sign column
+	{ src = "https://github.com/lewis6991/gitsigns.nvim" }, -- git changes in sign column
 	{ src = "https://github.com/mason-org/mason-lspconfig.nvim" }, -- replace arch lsp/linter installations
 	{ src = "https://github.com/mason-org/mason.nvim" }, -- replace arch lsp/linter installations
-	{ src = "https://github.com/mg979/vim-visual-multi.git" }, -- add multi cursor support
+	{ src = "https://github.com/mg979/vim-visual-multi" }, -- add multi cursor support
 	{ src = "https://github.com/neovim/nvim-lspconfig" }, -- default config for lsp
 	{ src = "https://github.com/numToStr/Comment.nvim" }, -- enables comment function
 	{ src = "https://github.com/nvim-lua/plenary.nvim" }, -- dependency for telescope
@@ -73,6 +82,7 @@ require("mason-tool-installer").setup({
 		"helm_ls",
 		"html",
 		"jsonls",
+		"jdtls",
 		"kotlin-debug-adapter",
 		"kotlin_language_server",
 		"ktlint",
@@ -87,6 +97,7 @@ require("mason-tool-installer").setup({
 		"shfmt",
 		"stylua",
 		"systemd_ls",
+		"taplo",
 		"terraform",
 		"terraformls",
 		"tree-sitter-cli",
@@ -98,11 +109,9 @@ require("mason-tool-installer").setup({
 vim.filetype.add({
 	pattern = {
 		[".*/playbooks/.*%.ya?ml"] = "yaml.ansible",
+		[".*/roles/.+/defaults/.*%.ya?ml"] = "yaml.ansible",
 		[".*/roles/.+/handlers/.*%.ya?ml"] = "yaml.ansible",
 		[".*/roles/.+/tasks/.*%.ya?ml"] = "yaml.ansible",
-	},
-	extension = {
-		kts = "kotlin",
 	},
 })
 
@@ -112,12 +121,14 @@ vim.lsp.config("lua_ls", { -- Configure lua_ls that it won't show vim errors
 	},
 })
 
-vim.lsp.config("kotlin_language_server", { filetypes = { "kotlin", "kt", "kts" } }) -- Configure kotlin_language_server
-
 -- Setup conform auto-formatter
 require("conform").setup({
 	formatters_by_ft = {
-		["*"] = { "codespell" },
+		["*"] = function(bufnr) -- Disable codespell for text files
+			local ft = vim.bo[bufnr].filetype
+			if ft == "markdown" or ft == "text" or ft == "tex" then return {} end
+			return { "codespell" }
+		end,
 		ansible = { "prettier", "ansible-lint", stop_after_first = true },
 		bash = { "shfmt" },
 		css = { "prettier" },
@@ -135,7 +146,7 @@ require("conform").setup({
 		toml = { "taplo" },
 		yaml = { "prettier" },
 	},
-	format_on_save = { timeout_ms = 5000, lsp_format = "fallback" },
+	format_on_save = { timeout = 5000, lsp_format = "fallback" },
 })
 
 -- Setup blink.cmp auto completion
@@ -199,6 +210,22 @@ require("nvim-autopairs").setup({})
 require("nvim-surround").setup({})
 require("substitute").setup()
 
+-- Setup catpuccin
+require("catppuccin").setup({
+	auto_integrations = true,
+	flavour = "auto",
+	background = { light = "latte", dark = "mocha" },
+})
+vim.cmd.colorscheme("catppuccin")
+
+-- Make trailing space match Normal in TabLine
+local normal_bg = vim.api.nvim_get_hl_by_name("Normal", true).background
+vim.api.nvim_set_hl(0, "TabLineFill", { fg = "NONE", bg = normal_bg })
+vim.api.nvim_create_autocmd("ColorScheme", {
+	pattern = "*",
+	callback = function() vim.api.nvim_set_hl(0, "TabLineFill", { fg = "NONE", bg = "NONE" }) end,
+})
+
 -- Setup cokeline
 -- Hide ToggleTerm float if active, then switch buffer
 local function safe_buffer_switch(bufnr)
@@ -237,67 +264,67 @@ require("cokeline").setup({
 	default_hl = {
 		fg = function(buffer)
 			if buffer.is_focused then
-				return get_hex("ColorColumn", "fg")
+				return get_hex("Normal", "fg")
 			else
-				return get_hex("CokelineBackground", "fg")
+				return get_hex("SignColumn", "fg")
 			end
 		end,
-		bg = function(buffer)
-			if buffer.is_focused then
-				return get_hex("Normal", "bg")
-			else
-				return get_hex("CokelineBackground", "bg")
-			end
-		end,
+		bg = "NONE",
 	},
 	components = {
-		{
-			text = function(buffer) return " " .. buffer.devicon.icon end,
-			fg = function(buffer) return buffer.devicon.color end,
+		{ text = " " },
+		{ -- icon
+			text = function(buffer) return buffer.devicon.icon end,
 			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
 		},
-		{
+		{ -- unique prefix
 			text = function(buffer) return buffer.unique_prefix end,
-			fg = get_hex("Comment", "fg"),
+			fg = function(buffer)
+				if buffer.is_focused then
+					return get_hex("Comment", "fg")
+				else
+					return get_hex("SignColumn", "fg")
+				end
+			end,
 			italic = true,
 			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
 		},
-		{ text = function(buffer) return buffer.filename .. " " end, on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end },
-		{ text = "", on_click = function(_, _, _, _, buffer) buffer:delete() end },
+		{ -- file name
+			text = function(buffer) return buffer.filename end,
+			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+		},
+		{ text = " " },
+		{ -- Close or modified icon
+			text = function(buffer) return buffer.is_modified and "" or "" end,
+			on_click = function(_, _, _, _, buffer)
+				if buffer.is_modified then
+					safe_buffer_switch(buffer.number)
+				else
+					buffer:delete()
+				end
+			end,
+		},
 		{ text = " " },
 	},
 })
 
--- Setup catpuccin
-require("catppuccin").setup({
-	auto_integrations = true,
-	flavour = "auto",
-	background = { light = "latte", dark = "mocha" },
-})
-vim.cmd.colorscheme("catppuccin")
+-- Setup external file handling, line is optional
+_G.OpenFromExternal = function(command, file_path, line)
+	local current_path = vim.fn.expand("%:p")
+	local target_path = vim.fn.fnamemodify(file_path, ":p")
 
--- Setup lazygit
-function EditLineFromLazygit(file_path, line)
-	local path = vim.fn.expand("%:p")
-	if path == file_path then
-		vim.cmd(tostring(line))
-	else
-		vim.cmd("e " .. file_path)
-		vim.cmd(tostring(line))
-	end
-end
-
-function EditFromLazygit(file_path)
-	local path = vim.fn.expand("%:p")
-	if path == file_path then
+	if current_path == target_path then
+		if line ~= nil then vim.api.nvim_win_set_cursor(0, { line, 0 }) end
 		return
-	else
-		vim.cmd("e " .. file_path)
 	end
+
+	vim.cmd(command .. " " .. vim.fn.fnameescape(file_path))
+
+	if line ~= nil then vim.api.nvim_win_set_cursor(0, { line, 0 }) end
 end
 
--- Setup Yazi
-function EditFromYazi(paths_str)
+-- Setup external file handling for Yazi
+_G.EditMultiFromYazi = function(paths_str)
 	local files = {}
 	for p in string.gmatch(paths_str, "%S+") do
 		table.insert(files, p)
@@ -307,24 +334,6 @@ function EditFromYazi(paths_str)
 	if path ~= files[1] then vim.cmd("e " .. files[1]) end
 	for i = 2, #files do
 		vim.cmd("tabedit " .. files[i])
-	end
-end
-
-function VsplitFromYazi(file_path)
-	local path = vim.fn.expand("%:p")
-	if path == file_path then
-		return
-	else
-		vim.cmd("vsplit " .. file_path)
-	end
-end
-
-function SplitFromYazi(file_path)
-	local path = vim.fn.expand("%:p")
-	if path == file_path then
-		return
-	else
-		vim.cmd("split " .. file_path)
 	end
 end
 
@@ -389,14 +398,22 @@ _G.ToggleYaziBufDir = function()
 	}):open()
 end
 
+local ScooterParamsExclude = { "ansible/**", "build/**", ".git/**" }
+local ScooterParams = '--hidden --fixed-strings --files-to-exclude="' .. table.concat(ScooterParamsExclude, ",") .. '"'
 local Scooter = Terminal:new({ -- scooter terminal
-	cmd = "scooter",
+	cmd = "scooter " .. ScooterParams,
 	direction = "float",
 	float_opts = FloatingTerminalOpts,
 	name = "scooter",
 })
 
 _G.ToggleScooter = function() Scooter:toggle() end
+_G.ToggleScooterSearchText = function(search_text)
+	if not search_text or search_text == "" then Scooter:toggle() end
+	Scooter.cmd = "scooter " .. ScooterParams .. ' --search-text "' .. search_text:gsub('"', '\\"') .. '"'
+	Scooter:toggle()
+	Scooter.cmd = "scooter " .. ScooterParams
+end
 
 local FloatingTerminal = Terminal:new({ -- floating terminal
 	direction = "float",
@@ -435,23 +452,25 @@ end
 vim.cmd("autocmd! TermOpen term://*toggleterm#* lua SetTerminalKeymaps()")
 
 -- Setup telescope
-local select_one_or_multi = function(prompt_bufnr)
-	local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
-	local multi = picker:get_multi_selection()
-	if not vim.tbl_isempty(multi) then
-		require("telescope.actions").close(prompt_bufnr)
-		for _, j in pairs(multi) do
-			if j.path ~= nil then vim.cmd(string.format("%s %s", "edit", j.path)) end
-		end
-	else
-		require("telescope.actions").select_default(prompt_bufnr)
-	end
-end
-
 require("telescope").setup({
 	defaults = {
 		path_display = { "truncate" },
-		mappings = { i = { ["<CR>"] = select_one_or_multi } },
+		mappings = {
+			i = {
+				["<CR>"] = function(prompt_bufnr) -- Open multi with <CR>
+					local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+					local multi = picker:get_multi_selection()
+					if not vim.tbl_isempty(multi) then
+						require("telescope.actions").close(prompt_bufnr)
+						for _, j in pairs(multi) do
+							if j.path ~= nil then vim.cmd(string.format("%s %s", "edit", j.path)) end
+						end
+					else
+						require("telescope.actions").select_default(prompt_bufnr)
+					end
+				end,
+			},
+		},
 	},
 })
 
@@ -486,12 +505,13 @@ k.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window", sile
 k.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window", silent = true, noremap = true })
 k.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window", silent = true, noremap = true })
 k.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window", silent = true, noremap = true })
+k.set("n", "<Del>", '"_x', { desc = "Del key without clipboard", noremap = true, silent = true })
 k.set("n", "<leader>/", require("telescope.builtin").live_grep, { desc = "Live grep", silent = true, noremap = true })
 k.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list", silent = true, noremap = true })
 k.set("n", "<leader>E", ":lua ToggleYazi()<CR>", { desc = "Toggle Yazi in Working dir", silent = true, noremap = true })
 k.set("n", "<leader>GG", ":lua require('gradle').telescope.pick_tasks()<CR>", { desc = "Gradle taks", silent = true, noremap = true })
 k.set("n", "<leader>GR", ":lua require('gradle').tasks.refresh_tasks_async()<CR>", { desc = "Refresh Gradle", silent = true, noremap = true })
-k.set("n", "<leader>GW", ":lua require('gradle').terminal.toggle()<CR>", { desc = "Gradle terminal", silent = true, noremap = true })
+k.set("n", "<leader>GT", ":lua require('gradle').terminal.toggle()<CR>", { desc = "Gradle terminal", silent = true, noremap = true })
 k.set("n", "<leader>TH", ":lua ToggleHorizontalTerminal()<CR>", { desc = "Toggle horizontal terminal", silent = true, noremap = true })
 k.set("n", "<leader>TV", ":lua ToggleVerticalTerminal()<CR>", { desc = "Toggle vertical terminal", silent = true, noremap = true })
 k.set("n", "<leader>b", require("telescope.builtin").buffers, { desc = "Find buffers", silent = true, noremap = true })
@@ -505,6 +525,7 @@ k.set("n", "<leader>w", ":write<CR>", { desc = "Write buffer", silent = true, no
 k.set("n", "S", require("substitute").eol, { desc = "Substitute eol", silent = true, noremap = true })
 k.set("n", "s", require("substitute").operator, { desc = "Substitute operator", silent = true, noremap = true })
 k.set("n", "ss", require("substitute").line, { desc = "Substitute line", silent = true, noremap = true })
+k.set("n", "x", '"_x', { desc = "Delete char without clipboard", noremap = true, silent = true })
 k.set("v", "<A-Left>", "<Esc><Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer", silent = true, noremap = true })
 k.set("v", "<A-Right>", "<Esc><Plug>(cokeline-focus-next)", { desc = "Go to next buffer", silent = true, noremap = true })
 k.set("v", "<A-S-Left>", "<Esc><Plug>(cokeline-switch-prev)", { desc = "Move buffer left", silent = true, noremap = true })
@@ -514,10 +535,16 @@ k.set("v", "<A-S-l>", "<Esc><Plug>(cokeline-switch-next)", { desc = "Move buffer
 k.set("v", "<A-h>", "<Esc><Plug>(cokeline-focus-prev)", { desc = "Go to previous buffer", silent = true, noremap = true })
 k.set("v", "<A-l>", "<Esc><Plug>(cokeline-focus-next)", { desc = "Go to next buffer", silent = true, noremap = true })
 k.set("v", "<A-w>", "<Esc>:bdelete<CR>", { desc = "Close buffer", silent = true, noremap = true })
-k.set("v", "<leader>/", "y<ESC>:Telescope live_grep default_text=<c-r>0<CR>", { desc = "Live grep", silent = true, noremap = true })
-k.set("v", "<leader>f", "y<ESC>:Telescope find_files default_text=<c-r>0<CR>", { desc = "Live grep", silent = true, noremap = true })
+k.set("v", "<Del>", '"_x', { desc = "Del selection without clipboard", noremap = true, silent = true })
+k.set("v", "<leader>/", '"ay<cmd>exec "Telescope grep_string default_text=" . escape(@a, " ")<cr>', { desc = "Live grep", silent = true, noremap = true })
+k.set("v", "<leader>TH", '"ay<ESC>:lua ToggleHorizontalTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle horizontal terminal", silent = true, noremap = true })
+k.set("v", "<leader>TV", '"ay<ESC>:lua ToggleVerticalTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle vertical terminal", silent = true, noremap = true })
+k.set("v", "<leader>f", '"ay<cmd>exec "Telescope find_files default_text=" . escape(@a, " ")<cr>', { desc = "Live grep", silent = true, noremap = true })
+k.set("v", "<leader>t", '"ay<ESC>:lua ToggleFloatingTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle floating terminal", silent = true, noremap = true })
+k.set("v", "<leader>r", '"ay<ESC><cmd>lua ToggleScooterSearchText(vim.fn.getreg("a"))<CR>', { desc = "Scooter search", silent = true, noremap = true })
 k.set("v", "H", "<gv", { desc = "Move line(s) to the left", silent = true, noremap = true })
 k.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down", silent = true, noremap = true })
 k.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up", silent = true, noremap = true })
 k.set("v", "L", ">gv", { desc = "Move line(s) to the right", silent = true, noremap = true })
+k.set("v", "x", '"_x', { desc = "Delete selection without clipboard", noremap = true, silent = true })
 k.set("x", "s", require("substitute").visual, { desc = "Substitute visual", silent = true, noremap = true })
