@@ -537,12 +537,7 @@ k.set("v", "<A-l>", "<Esc><Plug>(cokeline-focus-next)", { desc = "Go to next buf
 k.set("v", "<A-w>", "<Esc>:bdelete<CR>", { desc = "Close buffer", silent = true, noremap = true })
 k.set("v", "<Del>", '"_x', { desc = "Del selection without clipboard", noremap = true, silent = true })
 k.set("v", "<leader>/", '"ay<cmd>exec "Telescope grep_string default_text=" . escape(@a, " ")<cr>', { desc = "Live grep", silent = true, noremap = true })
-k.set(
-	"v",
-	"<leader>TH",
-	'"ay<ESC>:lua ToggleHorizontalTerminal()<CR><C-\\><C-n>"ap i<CR>',
-	{ desc = "Toggle horizontal terminal", silent = true, noremap = true }
-)
+k.set("v", "<leader>TH", '"ay<ESC>:lua ToggleHorizontalTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle horizontal terminal", silent = true, noremap = true })
 k.set("v", "<leader>TV", '"ay<ESC>:lua ToggleVerticalTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle vertical terminal", silent = true, noremap = true })
 k.set("v", "<leader>f", '"ay<cmd>exec "Telescope find_files default_text=" . escape(@a, " ")<cr>', { desc = "Live grep", silent = true, noremap = true })
 k.set("v", "<leader>t", '"ay<ESC>:lua ToggleFloatingTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle floating terminal", silent = true, noremap = true })
