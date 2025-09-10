@@ -408,7 +408,7 @@ _G.ToggleScooterSearchText = function(search_text)
 		Scooter:toggle()
 		return
 	end
-	Scooter.cmd = "scooter " .. ScooterParams .. ' --search-text "' .. search_text:gsub('"', '\\"') .. '"'
+	Scooter.cmd = "scooter " .. ScooterParams .. " --search-text '" .. search_text:gsub("'", "'\\''") .. "'"
 	Scooter:toggle()
 	Scooter.cmd = "scooter " .. ScooterParams
 end
