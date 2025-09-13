@@ -1,9 +1,15 @@
 -- Set nvim options
-vim.diagnostic.config({ update_in_insert = true, virtual_text = true })
+vim.diagnostic.config({
+	virtual_text = true,
+	float = { border = "rounded", source = "always" },
+	update_in_insert = true,
+	severity_sort = true,
+})
 vim.g.have_nerd_font = true
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.o.clipboard = "unnamedplus" -- use system clipboard
+vim.o.cmdheight = 0
 vim.o.confirm = true
 vim.o.cursorline = true
 vim.o.lazyredraw = true -- fix ghostty mouse lags in nvim
@@ -30,7 +36,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 -- Enable spell only for text files
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "markdown", "text", "tex" },
+	pattern = { "markdown", "text", "tex", "gitcommit", "asciidoc", "rst" },
 	callback = function()
 		vim.opt_local.spell = true
 		vim.opt_local.spelllang = { "de", "en_us" }
@@ -65,7 +71,56 @@ vim.pack.add({
 
 -- Setup mason and auto install all dependencies
 require("mason").setup()
-require("mason-lspconfig").setup()
+require("nvim-treesitter.configs").setup({
+	ensure_installed = {
+		"bash",
+		"css",
+		"dockerfile",
+		"fish",
+		"groovy",
+		"helm",
+		"html",
+		"json",
+		"kotlin",
+		"lua",
+		"markdown",
+		"markdown_inline",
+		"nginx",
+		"python",
+		"rust",
+		"terraform",
+		"toml",
+		"yaml",
+	},
+	sync_install = true,
+	auto_install = true,
+	highlight = {
+		enable = true,
+		additional_vim_regex_highlighting = false,
+	},
+})
+require("mason-lspconfig").setup({
+	ensure_installed = {
+		"ansiblels",
+		"bashls",
+		"cssls",
+		"dockerls",
+		"fish_lsp",
+		"groovyls",
+		"helm_ls",
+		"html",
+		"jsonls",
+		"kotlin_language_server",
+		"lua_ls",
+		"marksman",
+		"pyright",
+		"rust_analyzer",
+		"systemd_ls",
+		"taplo",
+		"terraformls",
+		"yamlls",
+	},
+})
 require("mason-tool-installer").setup({
 	ensure_installed = {
 		"ansible-lint",
@@ -74,20 +129,18 @@ require("mason-tool-installer").setup({
 		"black", -- python format
 		"codespell",
 		"cssls",
-		"docker_compose_language_service",
-		"docker_language_server",
 		"dockerls",
 		"fish_lsp",
 		"groovyls",
 		"helm_ls",
 		"html",
 		"jsonls",
-		"jdtls",
 		"kotlin-debug-adapter",
 		"kotlin_language_server",
 		"ktlint",
 		"lua_ls",
 		"marksman",
+		"markdownlint-cli2",
 		"nginx-config-formatter",
 		"nginx-language-server",
 		"npm-groovy-lint",
@@ -112,6 +165,7 @@ vim.filetype.add({
 		[".*/roles/.+/defaults/.*%.ya?ml"] = "yaml.ansible",
 		[".*/roles/.+/handlers/.*%.ya?ml"] = "yaml.ansible",
 		[".*/roles/.+/tasks/.*%.ya?ml"] = "yaml.ansible",
+		[".*%.gradle%.kts"] = "kotlin",
 	},
 })
 
@@ -123,30 +177,26 @@ vim.lsp.config("lua_ls", { -- Configure lua_ls that it won't show vim errors
 
 -- Setup conform auto-formatter
 require("conform").setup({
-	formatters_by_ft = {
-		["*"] = function(bufnr) -- Disable codespell for text files
-			local ft = vim.bo[bufnr].filetype
-			if ft == "markdown" or ft == "text" or ft == "tex" then return {} end
-			return { "codespell" }
-		end,
-		ansible = { "prettier", "ansible-lint", stop_after_first = true },
-		bash = { "shfmt" },
-		css = { "prettier" },
-		groovy = { "npm-groovy-lint" },
-		helm = { "prettier" },
-		html = { "prettier" },
-		javascript = { "prettier" },
-		json = { "prettier" },
-		kotlin = { "ktlint" },
-		lua = { "stylua" },
-		markdown = { "prettier" },
-		python = { "black" },
-		rust = { "rustfmt" },
-		terraform = { "terraform_fmt" },
-		toml = { "taplo" },
-		yaml = { "prettier" },
-	},
 	format_on_save = { timeout = 5000, lsp_format = "fallback" },
+	formatters_by_ft = {
+		ansible = { "prettier", "codespell" },
+		css = { "prettier", "codespell" },
+		fish = { "fish_indent", "codespell" },
+		go = { "gofmt", "codespell" },
+		html = { "prettier", "codespell" },
+		javascript = { "prettier", "codespell" },
+		json = { "prettier", "codespell" },
+		kotlin = { "ktlint", "codespell" },
+		lua = { "stylua", "codespell" },
+		markdown = { "markdownlint-cli2" },
+		rust = { "rustfmt", "codespell" },
+		sh = { "shfmt", "codespell" },
+		terraform = { "terraform_fmt", "codespell" },
+		tex = {},
+		text = {},
+		typescript = { "prettier", "codespell" },
+		yaml = { "prettier", "codespell" },
+	},
 })
 
 -- Setup blink.cmp auto completion
@@ -209,6 +259,13 @@ require("Comment").setup()
 require("nvim-autopairs").setup({})
 require("nvim-surround").setup({})
 require("substitute").setup()
+require("vim._extui").enable({
+	enable = true,
+	msg = {
+		target = "msg",
+		timeout = 5000,
+	},
+})
 
 -- Setup catpuccin
 require("catppuccin").setup({
@@ -218,12 +275,36 @@ require("catppuccin").setup({
 })
 vim.cmd.colorscheme("catppuccin")
 
--- Make trailing space match Normal in TabLine
-local normal_bg = vim.api.nvim_get_hl_by_name("Normal", true).background
-vim.api.nvim_set_hl(0, "TabLineFill", { fg = "NONE", bg = normal_bg })
+-- Function to sync highlight groups with Normal background
+local function sync_highlights()
+	local normal_bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
+
+	-- Ensure TabLineFill trailing space blends with background
+	vim.api.nvim_set_hl(0, "TabLineFill", { fg = "NONE", bg = "NONE" })
+
+	-- Align float-related groups to Normal
+	for _, g in ipairs({
+		"NormalFloat", -- general float background
+		"FloatBorder", -- border around floats
+		"FloatTitle", -- float title/header
+		"ToggleTerm", -- terminal buffer
+		"ToggleTermBorder", -- floating terminal border
+	}) do
+		local hl = vim.api.nvim_get_hl(0, { name = g })
+		if hl then
+			hl.bg = normal_bg
+			vim.api.nvim_set_hl(0, g, hl)
+		end
+	end
+end
+
+-- Apply immediately on startup
+sync_highlights()
+
+-- Reapply automatically whenever colorscheme changes
 vim.api.nvim_create_autocmd("ColorScheme", {
 	pattern = "*",
-	callback = function() vim.api.nvim_set_hl(0, "TabLineFill", { fg = "NONE", bg = "NONE" }) end,
+	callback = sync_highlights,
 })
 
 -- Setup cokeline
@@ -312,9 +393,7 @@ require("cokeline").setup({
 _G.OpenFromExternal = function(command, file_path, line)
 	local current_path = vim.fn.expand("%:p")
 	local target_path = vim.fn.fnamemodify(file_path, ":p")
-
 	if current_path ~= target_path then vim.cmd(command .. " " .. vim.fn.fnameescape(file_path)) end
-
 	if line ~= nil then vim.api.nvim_win_set_cursor(0, { line, 0 }) end
 end
 
@@ -332,6 +411,9 @@ _G.EditMultiFromYazi = function(paths_str)
 	end
 end
 
+local normal_bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
+local border_fg = vim.api.nvim_get_hl(0, { name = "FloatBorder" }).fg
+
 -- Setup toggleterm
 require("toggleterm").setup({
 	shade_terminals = false,
@@ -344,6 +426,18 @@ require("toggleterm").setup({
 	end,
 	start_in_insert = true,
 	hidden = true,
+	highlights = {
+		Normal = {
+			guibg = string.format("#%06x", normal_bg),
+		},
+		NormalFloat = {
+			link = "Normal", -- float background = Normal
+		},
+		FloatBorder = {
+			guifg = string.format("#%06x", border_fg),
+			guibg = string.format("#%06x", normal_bg),
+		},
+	},
 })
 
 local Terminal = require("toggleterm.terminal").Terminal
@@ -351,8 +445,8 @@ local Terminal = require("toggleterm.terminal").Terminal
 local FloatingTerminalOpts = {
 	border = "curved",
 	title_pos = "center",
-	width = function() return vim.o.columns - 10 end,
-	height = function() return vim.o.lines - 5 end,
+	width = math.floor(vim.o.columns * 0.99),
+	height = math.floor(vim.o.lines * 0.9),
 }
 
 local Lazygit = Terminal:new({ -- lazygit terminal
@@ -360,9 +454,18 @@ local Lazygit = Terminal:new({ -- lazygit terminal
 	direction = "float",
 	float_opts = FloatingTerminalOpts,
 	name = "lazygit",
+	on_close = function() vim.cmd("checktime") end,
 })
 
-_G.ToggleLazygit = function() Lazygit:toggle() end
+_G.ToggleLazygit = function()
+	-- Check if inside a Git repository
+	local git_status = vim.fn.systemlist("git rev-parse --is-inside-work-tree")[1]
+	if git_status == "true" then
+		Lazygit:toggle()
+	else
+		vim.notify("This is not a Git repository!", vim.log.levels.WARN)
+	end
+end
 
 _G.ToggleYazi = function()
 	Terminal:new({
@@ -400,6 +503,7 @@ local Scooter = Terminal:new({ -- scooter terminal
 	direction = "float",
 	float_opts = FloatingTerminalOpts,
 	name = "scooter",
+	on_close = function() vim.cmd("checktime") end,
 })
 
 _G.ToggleScooter = function() Scooter:toggle() end
@@ -419,6 +523,7 @@ local FloatingTerminal = Terminal:new({ -- floating terminal
 	name = "floating_terminal",
 	auto_scroll = false,
 	env = { FISH_ENABLE_AUTOLOG = "1" },
+	on_close = function() vim.cmd("checktime") end,
 })
 
 _G.ToggleFloatingTerminal = function() FloatingTerminal:toggle() end
@@ -427,6 +532,7 @@ local HorizontalTerminal = Terminal:new({ -- horizontal terminal
 	name = "terminal",
 	direction = "horizontal",
 	env = { FISH_ENABLE_AUTOLOG = "1" },
+	on_close = function() vim.cmd("checktime") end,
 })
 
 _G.ToggleHorizontalTerminal = function() HorizontalTerminal:toggle() end
@@ -435,6 +541,7 @@ local VerticalTerminal = Terminal:new({ -- vertical terminal
 	name = "terminal",
 	direction = "vertical",
 	env = { FISH_ENABLE_AUTOLOG = "1" },
+	on_close = function() vim.cmd("checktime") end,
 })
 
 _G.ToggleVerticalTerminal = function() VerticalTerminal:toggle() end
@@ -452,7 +559,12 @@ vim.cmd("autocmd! TermOpen term://*toggleterm#* lua SetTerminalKeymaps()")
 -- Setup telescope
 require("telescope").setup({
 	defaults = {
+		layout_strategy = "flex", -- automatically switches between vertical/horizontal
+		layout_config = {
+			horizontal = { width = 0.99, height = 0.99, preview_width = 0.5 },
+		},
 		path_display = { "truncate" },
+		borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
 		mappings = {
 			i = {
 				["<CR>"] = function(prompt_bufnr) -- Open multi with <CR>
@@ -505,7 +617,6 @@ k.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window", sil
 k.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window", silent = true, noremap = true })
 k.set("n", "<Del>", '"_x', { desc = "Del key without clipboard", noremap = true, silent = true })
 k.set("n", "<leader>/", require("telescope.builtin").live_grep, { desc = "Live grep", silent = true, noremap = true })
-k.set("n", "<leader>D", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix list", silent = true, noremap = true })
 k.set("n", "<leader>E", ":lua ToggleYazi()<CR>", { desc = "Toggle Yazi in Working dir", silent = true, noremap = true })
 k.set("n", "<leader>GG", ":GradlePickTasks<CR>", { desc = "List Gradle Tasks", silent = true, noremap = true })
 k.set("n", "<leader>GR", ":GradleRefreshTasks<CR>", { desc = "Refresh Gradle Tasks", silent = true, noremap = true })
