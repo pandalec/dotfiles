@@ -443,7 +443,7 @@ local get_hex = require("cokeline.hlgroups").get_hl_attr
 vim.api.nvim_set_hl(0, "TabLineFill", { fg = "NONE", bg = "NONE" })
 
 -- Hide ToggleTerm float if active, then switch buffer
-local function safe_buffer_switch(bufnr)
+local function safe_buffer_switch(button, buffer)
 	local win = vim.api.nvim_get_current_win()
 	local cfg = vim.api.nvim_win_get_config(win)
 
@@ -468,8 +468,12 @@ local function safe_buffer_switch(bufnr)
 		end
 	end
 
-	-- Finally, switch to the buffer
-	vim.api.nvim_set_current_buf(bufnr)
+	-- Finally, switch to the buffer, close if right click
+	if button == "r" then
+		buffer:delete()
+	else
+		vim.api.nvim_set_current_buf(buffer.number)
+	end
 end
 
 require("cokeline").setup({
@@ -484,11 +488,14 @@ require("cokeline").setup({
 		end,
 		bg = "NONE",
 	},
+	buffers = {
+		delete_on_right_click = true,
+	},
 	components = {
 		{ text = " " },
 		{ -- icon
 			text = function(buffer) return buffer.devicon.icon end,
-			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+			on_click = function(_, _, button, _, buffer) safe_buffer_switch(button, buffer) end,
 		},
 		{ -- unique prefix
 			text = function(buffer) return buffer.unique_prefix end,
@@ -500,11 +507,11 @@ require("cokeline").setup({
 				end
 			end,
 			italic = true,
-			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+			on_click = function(_, _, button, _, buffer) safe_buffer_switch(button, buffer) end,
 		},
 		{ -- file name
 			text = function(buffer) return buffer.filename end,
-			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+			on_click = function(_, _, button, _, buffer) safe_buffer_switch(button, buffer) end,
 		},
 		{ text = " " },
 		{ -- Close or modified icon
@@ -614,8 +621,8 @@ k.set("v", "<leader>/", '"ay<cmd>exec "Telescope grep_string default_text=" . es
 k.set("v", "<leader>TH", '"ay<ESC>:lua ToggleHorizontalTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle horizontal terminal", silent = true, noremap = true })
 k.set("v", "<leader>TV", '"ay<ESC>:lua ToggleVerticalTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle vertical terminal", silent = true, noremap = true })
 k.set("v", "<leader>f", '"ay<cmd>exec "Telescope find_files default_text=" . escape(@a, " ")<cr>', { desc = "Live grep", silent = true, noremap = true })
-k.set("v", "<leader>t", '"ay<ESC>:lua ToggleFloatingTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle floating terminal", silent = true, noremap = true })
 k.set("v", "<leader>r", '"ay<ESC><cmd>lua ToggleScooterSearchText(vim.fn.getreg("a"))<CR>', { desc = "Scooter search", silent = true, noremap = true })
+k.set("v", "<leader>t", '"ay<ESC>:lua ToggleFloatingTerminal()<CR><C-\\><C-n>"ap i<CR>', { desc = "Toggle floating terminal", silent = true, noremap = true })
 k.set("v", "H", "<gv", { desc = "Move line(s) to the left", silent = true, noremap = true })
 k.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move line(s) down", silent = true, noremap = true })
 k.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move line(s) up", silent = true, noremap = true })
