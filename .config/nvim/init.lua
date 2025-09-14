@@ -70,92 +70,85 @@ vim.pack.add({
 })
 
 -- Setup mason and auto install all dependencies
+local treesitter_langs = {
+	"bash",
+	"css",
+	"dockerfile",
+	"fish",
+	"groovy",
+	"helm",
+	"html",
+	"json",
+	"kotlin",
+	"lua",
+	"markdown",
+	"markdown_inline",
+	"nginx",
+	"python",
+	"rust",
+	"terraform",
+	"toml",
+	"yaml",
+}
+
+local lsp_servers = {
+	"ansiblels",
+	"bashls",
+	"cssls",
+	"dockerls",
+	"fish_lsp",
+	"groovyls",
+	"helm_ls",
+	"html",
+	"jsonls",
+	"kotlin_language_server",
+	"lua_ls",
+	"marksman",
+	"pyright",
+	"rust_analyzer",
+	"systemd_ls",
+	"taplo",
+	"terraformls",
+	"yamlls",
+}
+
+local extra_tools = {
+	"ansible-lint",
+	"black",
+	"codespell",
+	"kotlin-debug-adapter",
+	"ktlint",
+	"markdownlint-cli2",
+	"nginx-config-formatter",
+	"nginx-language-server",
+	"npm-groovy-lint",
+	"prettier",
+	"shfmt",
+	"stylua",
+	"terraform",
+	"tree-sitter-cli",
+}
+
+-- Mason core
 require("mason").setup()
+
+-- Treesitter
 require("nvim-treesitter.configs").setup({
-	ensure_installed = {
-		"bash",
-		"css",
-		"dockerfile",
-		"fish",
-		"groovy",
-		"helm",
-		"html",
-		"json",
-		"kotlin",
-		"lua",
-		"markdown",
-		"markdown_inline",
-		"nginx",
-		"python",
-		"rust",
-		"terraform",
-		"toml",
-		"yaml",
-	},
+	ensure_installed = treesitter_langs,
 	sync_install = true,
 	auto_install = true,
-	highlight = {
-		enable = true,
-		additional_vim_regex_highlighting = false,
-	},
+	highlight = { enable = true, additional_vim_regex_highlighting = false },
 })
+
+-- LSP servers
 require("mason-lspconfig").setup({
-	ensure_installed = {
-		"ansiblels",
-		"bashls",
-		"cssls",
-		"dockerls",
-		"fish_lsp",
-		"groovyls",
-		"helm_ls",
-		"html",
-		"jsonls",
-		"kotlin_language_server",
-		"lua_ls",
-		"marksman",
-		"pyright",
-		"rust_analyzer",
-		"systemd_ls",
-		"taplo",
-		"terraformls",
-		"yamlls",
-	},
+	ensure_installed = lsp_servers,
 })
+
+-- Tools (union of LSP servers + extra tools)
+local mason_tools = vim.tbl_extend("force", lsp_servers, extra_tools)
 require("mason-tool-installer").setup({
-	ensure_installed = {
-		"ansible-lint",
-		"ansiblels",
-		"bashls",
-		"black", -- python format
-		"codespell",
-		"cssls",
-		"dockerls",
-		"fish_lsp",
-		"groovyls",
-		"helm_ls",
-		"html",
-		"jsonls",
-		"kotlin-debug-adapter",
-		"kotlin_language_server",
-		"ktlint",
-		"lua_ls",
-		"marksman",
-		"markdownlint-cli2",
-		"nginx-config-formatter",
-		"nginx-language-server",
-		"npm-groovy-lint",
-		"prettier",
-		"pyright",
-		"rust_analyzer",
-		"shfmt",
-		"stylua",
-		"systemd_ls",
-		"taplo",
-		"terraform",
-		"terraformls",
-		"tree-sitter-cli",
-		"yamlls",
-	},
+	ensure_installed = mason_tools,
 })
 
 -- Setup lsp
@@ -270,122 +263,36 @@ require("vim._extui").enable({
 -- Setup catpuccin
 require("catppuccin").setup({
 	auto_integrations = true,
+	transparent_background = true,
 	flavour = "auto",
 	background = { light = "latte", dark = "mocha" },
+	custom_highlights = function(colors)
+		return { -- use nvim bg for floats
+			NormalFloat = { bg = colors.base },
+			FloatBorder = { bg = colors.base },
+			FloatTitle = { bg = colors.base },
+		}
+	end,
 })
 vim.cmd.colorscheme("catppuccin")
 
--- Function to sync highlight groups with Normal background
-local function sync_highlights()
-	local normal_bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
-
-	-- Ensure TabLineFill trailing space blends with background
-	vim.api.nvim_set_hl(0, "TabLineFill", { fg = "NONE", bg = "NONE" })
-
-	-- Align float-related groups to Normal
-	for _, g in ipairs({
-		"NormalFloat", -- general float background
-		"FloatBorder", -- border around floats
-		"FloatTitle", -- float title/header
-		"ToggleTerm", -- terminal buffer
-		"ToggleTermBorder", -- floating terminal border
-	}) do
-		local hl = vim.api.nvim_get_hl(0, { name = g })
-		if hl then
-			hl.bg = normal_bg
-			vim.api.nvim_set_hl(0, g, hl)
+-- Setup ToggleTerm
+require("toggleterm").setup({
+	shade_terminals = false,
+	size = function(term)
+		if term.direction == "horizontal" then
+			return vim.o.lines * 0.5
+		elseif term.direction == "vertical" then
+			return vim.o.columns * 0.5
 		end
-	end
-end
-
--- Apply immediately on startup
-sync_highlights()
-
--- Reapply automatically whenever colorscheme changes
-vim.api.nvim_create_autocmd("ColorScheme", {
-	pattern = "*",
-	callback = sync_highlights,
-})
-
--- Setup cokeline
--- Hide ToggleTerm float if active, then switch buffer
-local function safe_buffer_switch(bufnr)
-	local win = vim.api.nvim_get_current_win()
-	local cfg = vim.api.nvim_win_get_config(win)
-
-	-- If current window is floating
-	if cfg.relative ~= "" then
-		-- If it’s a toggleterm terminal, hide it
-		if vim.bo.buftype == "terminal" then
-			local ok, Terminal = pcall(require, "toggleterm.terminal")
-			if ok then
-				local term = Terminal.get_or_create_term({ bufnr = vim.api.nvim_get_current_buf() })
-				if term and term:is_open() then term:toggle() end
-			end
-		end
-
-		-- Redirect focus to the first non-floating window
-		for _, w in ipairs(vim.api.nvim_list_wins()) do
-			local wc = vim.api.nvim_win_get_config(w)
-			if wc.relative == "" then
-				vim.api.nvim_set_current_win(w)
-				break
-			end
-		end
-	end
-
-	-- Finally, switch to the buffer
-	vim.api.nvim_set_current_buf(bufnr)
-end
-
-local get_hex = require("cokeline.hlgroups").get_hl_attr
-
-require("cokeline").setup({
-	show_if_buffers_are_at_least = 2,
-	default_hl = {
-		fg = function(buffer)
-			if buffer.is_focused then
-				return get_hex("Normal", "fg")
-			else
-				return get_hex("SignColumn", "fg")
-			end
-		end,
-		bg = "NONE",
-	},
-	components = {
-		{ text = " " },
-		{ -- icon
-			text = function(buffer) return buffer.devicon.icon end,
-			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
-		},
-		{ -- unique prefix
-			text = function(buffer) return buffer.unique_prefix end,
-			fg = function(buffer)
-				if buffer.is_focused then
-					return get_hex("Comment", "fg")
-				else
-					return get_hex("SignColumn", "fg")
-				end
-			end,
-			italic = true,
-			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
-		},
-		{ -- file name
-			text = function(buffer) return buffer.filename end,
-			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
-		},
-		{ text = " " },
-		{ -- Close or modified icon
-			text = function(buffer) return buffer.is_modified and "" or "" end,
-			on_click = function(_, _, _, _, buffer)
-				if buffer.is_modified then
-					safe_buffer_switch(buffer.number)
-				else
-					buffer:delete()
-				end
-			end,
-		},
-		{ text = " " },
+	end,
+	start_in_insert = true,
+	hidden = true,
+	highlights = {
+		Normal = { link = "Normal" },
+		NormalFloat = { link = "NormalFloat" },
+		FloatBorder = { link = "FloatBorder" },
+		FloatTitle = { link = "FloatTitle" },
 	},
 })
 
@@ -411,41 +318,12 @@ _G.EditMultiFromYazi = function(paths_str)
 	end
 end
 
-local normal_bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
-local border_fg = vim.api.nvim_get_hl(0, { name = "FloatBorder" }).fg
-
--- Setup toggleterm
-require("toggleterm").setup({
-	shade_terminals = false,
-	size = function(term)
-		if term.direction == "horizontal" then
-			return vim.o.lines * 0.5
-		elseif term.direction == "vertical" then
-			return vim.o.columns * 0.5
-		end
-	end,
-	start_in_insert = true,
-	hidden = true,
-	highlights = {
-		Normal = {
-			guibg = string.format("#%06x", normal_bg),
-		},
-		NormalFloat = {
-			link = "Normal", -- float background = Normal
-		},
-		FloatBorder = {
-			guifg = string.format("#%06x", border_fg),
-			guibg = string.format("#%06x", normal_bg),
-		},
-	},
-})
-
 local Terminal = require("toggleterm.terminal").Terminal
 
 local FloatingTerminalOpts = {
 	border = "curved",
 	title_pos = "center",
-	width = math.floor(vim.o.columns * 0.99),
+	width = math.floor(vim.o.columns * 0.98),
 	height = math.floor(vim.o.lines * 0.9),
 }
 
@@ -552,9 +430,96 @@ function _G.SetTerminalKeymaps() -- Configure terminal keymaps
 	vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
 	vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
 	vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
+	-- vim.keymap.set("t", "<esc>", [[<C-\><C-n>]], opts) -- TODO: Lazygit ESC
+	vim.keymap.set("t", "<esc><esc>", [[<Cmd>wincmd j<CR>]], opts)
 end
 
 vim.cmd("autocmd! TermOpen term://*toggleterm#* lua SetTerminalKeymaps()")
+
+-- Setup cokeline
+local get_hex = require("cokeline.hlgroups").get_hl_attr
+
+-- Keep TabLineFill transparent
+vim.api.nvim_set_hl(0, "TabLineFill", { fg = "NONE", bg = "NONE" })
+
+-- Hide ToggleTerm float if active, then switch buffer
+local function safe_buffer_switch(bufnr)
+	local win = vim.api.nvim_get_current_win()
+	local cfg = vim.api.nvim_win_get_config(win)
+
+	-- If current window is floating
+	if cfg.relative ~= "" then
+		-- If it’s a toggleterm terminal, hide it
+		if vim.bo.buftype == "terminal" then
+			local ok, toggleterm_terminal = pcall(require, "toggleterm.terminal")
+			if ok then
+				local term = toggleterm_terminal.get_or_create_term({ bufnr = vim.api.nvim_get_current_buf() })
+				if term and term:is_open() then term:toggle() end
+			end
+		end
+
+		-- Redirect focus to the first non-floating window
+		for _, w in ipairs(vim.api.nvim_list_wins()) do
+			local wc = vim.api.nvim_win_get_config(w)
+			if wc.relative == "" then
+				vim.api.nvim_set_current_win(w)
+				break
+			end
+		end
+	end
+
+	-- Finally, switch to the buffer
+	vim.api.nvim_set_current_buf(bufnr)
+end
+
+require("cokeline").setup({
+	show_if_buffers_are_at_least = 2,
+	default_hl = {
+		fg = function(buffer)
+			if buffer.is_focused then
+				return get_hex("Normal", "fg")
+			else
+				return get_hex("Comment", "fg")
+			end
+		end,
+		bg = "NONE",
+	},
+	components = {
+		{ text = " " },
+		{ -- icon
+			text = function(buffer) return buffer.devicon.icon end,
+			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+		},
+		{ -- unique prefix
+			text = function(buffer) return buffer.unique_prefix end,
+			fg = function(buffer)
+				if buffer.is_focused then
+					return get_hex("Comment", "fg")
+				else
+					return get_hex("SignColumn", "fg")
+				end
+			end,
+			italic = true,
+			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+		},
+		{ -- file name
+			text = function(buffer) return buffer.filename end,
+			on_click = function(_, _, _, _, buffer) safe_buffer_switch(buffer.number) end,
+		},
+		{ text = " " },
+		{ -- Close or modified icon
+			text = function(buffer) return buffer.is_modified and "" or "" end,
+			on_click = function(_, _, _, _, buffer)
+				if buffer.is_modified then
+					safe_buffer_switch(buffer.number)
+				else
+					buffer:delete()
+				end
+			end,
+		},
+		{ text = " " },
+	},
+})
 
 -- Setup telescope
 require("telescope").setup({
