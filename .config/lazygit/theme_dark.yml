@@ -1,11 +1,4 @@
----
-os:
-  edit: 'nvim --server $NVIM --remote-send ''<cmd>close<CR><cmd>lua OpenFromExternal("e", {{filename}})<CR>'''
-  editAtLine: 'nvim --server $NVIM --remote-send ''<cmd>close<CR><cmd>lua OpenFromExternal("e", {{filename}}, {{line}})<CR>'''
 gui:
-  skipDiscardChangeWarning: true
-  nerdFontsVersion: "3"
-  showFileIcons: false
   theme:
     activeBorderColor:
       - "#89b4fa"
@@ -26,9 +19,6 @@ gui:
       - "#cdd6f4"
     searchingActiveBorderColor:
       - "#f9e2af"
+
   authorColors:
     "*": "#b4befe"
-notARepository: quit
-promptToReturnFromSubprocess: false
-git:
-  autoForwardBranches: allBranches
