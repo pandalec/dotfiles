@@ -9,7 +9,7 @@ if [ "$#" -ne 1 ] || ([ "${1}" != "light" ] && [ "${1}" != "dark" ]); then
 fi
 
 # Set wallpaper
-~/.scripts/set_wallpaper.sh "${1}"
+~/.scripts/set_wallpaper.sh "${1}" &
 
 # Common functions
 set_fish() {
@@ -47,21 +47,21 @@ set_gsettings() {
 }
 
 set_dark() {
-  set_bat "Catppuccin Mocha"
-  set_scooter "Catppuccin Mocha"
-  set_lazygit "dark"
-  set_fish "Catppuccin Mocha"
-  set_yazi "dark"
-  set_gsettings "adw-gtk3-dark" "prefer-dark"
+  set_bat "Catppuccin Mocha" &
+  set_scooter "Catppuccin Mocha" &
+  set_lazygit "dark" &
+  set_fish "Catppuccin Mocha" &
+  set_yazi "dark" &
+  set_gsettings "adw-gtk3-dark" "prefer-dark" &
 }
 
 set_light() {
-  set_bat "Catppuccin Latte"
-  set_scooter "Catppuccin Latte"
-  set_lazygit "light"
-  set_fish "Catppuccin Latte"
-  set_yazi "light"
-  set_gsettings "adw-gtk3" "default"
+  set_bat "Catppuccin Latte" &
+  set_scooter "Catppuccin Latte" &
+  set_lazygit "light" &
+  set_fish "Catppuccin Latte" &
+  set_yazi "light" &
+  set_gsettings "adw-gtk3" "default" &
 }
 
 # Set light / dark mode
