@@ -3,11 +3,17 @@ alias reload="source ~/.config/fish/config.fish"
 
 set -gx EDITOR nvim
 set -gx MOZ_ENABLE_WAYLAND 1
+set -gx GO111MODULE on
 
 # @fish-lsp-disable-next-line
 alias venv=". ansible/venv/bin/activate.fish || . venv/bin/activate.fish || echo 'No venv found'"
 
 set -gx RIPGREP_CONFIG_PATH "$HOME/.ripgreprc"
+
+set -l private_file ~/.config/fish/private.fish
+if test -f $private_file
+    source $private_file
+end
 
 if type -q huenicorn
     # @fish-lsp-disable-next-line

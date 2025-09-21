@@ -24,6 +24,7 @@ wk.setup({
       { pattern = "gradle", icon = "", color = "maroon" },
       { pattern = "find", icon = "", color = "rosewater" },
       { pattern = "git", icon = "", color = "red" },
+      { pattern = "jira", icon = "", color = "blue" },
       { pattern = "replace", icon = "", color = "green" },
       { pattern = "surround", icon = "", color = "sky" },
       { pattern = "scooter", icon = "󱖽", color = "yellow" },
@@ -36,7 +37,8 @@ wk.add({
   { "<leader>c", group = "Code actions" },
   { "<leader>f", group = "Find ... with selection", mode = { "v" } },
   { "<leader>f", group = "Find ...", mode = { "n" } },
-  { "<leader>g", group = "Lazygit" },
+  -- { "<leader>g", group = "Lazygit" },
+  { "<leader>j", group = "Jira" },
   { "<leader>t", group = "Terminal with selection", mode = { "v" } },
   { "<leader>t", group = "Terminal", mode = { "n" } },
 })
@@ -45,7 +47,7 @@ wk.add({
 -- local modes = { "n", "v", "x", "o" }
 local modes = { "n", "v" }
 local hidden = {}
-local alphabet = "abdehijklmnopqrsuvwxyzABCDEFHIJKLMNOPQRSTUVWXYZ"
+local alphabet = "abdehiklmnopqrsuvwxyzABCDEFHIJKLMNOPQRSTUVWXYZ"
 local codes = { string.byte(alphabet, 1, #alphabet) }
 
 local function has_map(lhs, mode)

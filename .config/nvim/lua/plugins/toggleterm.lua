@@ -46,7 +46,7 @@ end
 
 local Terminal = require("toggleterm.terminal").Terminal
 
-local FloatingTerminalOpts = {
+_G.FloatingTerminalOpts = {
   border = "curved",
   title_pos = "center",
   width = math.floor(vim.o.columns * 0.98),

@@ -6,8 +6,8 @@ function Map(mode, lhs, rhs, opts)
 end
 
 -- Ghostty mouse lag fix
-Map("", "<ScrollWheelDown>", "2<C-E>", { desc = "Scroll down 2 lines" })
-Map("", "<ScrollWheelUp>", "2<C-Y>", { desc = "Scroll up 2 lines" })
+-- Map("", "<ScrollWheelDown>", "2<C-E>", { desc = "Scroll down 2 lines" })
+-- Map("", "<ScrollWheelUp>", "2<C-Y>", { desc = "Scroll up 2 lines" })
 
 -- Cokeline navigation
 Map("n", "<A-Left>", "<Plug>(cokeline-focus-prev)", { desc = "Focus previous buffer" })
@@ -81,7 +81,7 @@ Map("n", "<leader>o", "o<Esc>", { desc = "New line below (normal mode)" })
 Map("n", "<leader>O", "O<Esc>", { desc = "New line above (normal mode)" })
 Map("n", "<leader>E", ":lua ToggleYazi()<CR>", { desc = "Toggle Yazi project dir" })
 Map("n", "<leader>e", ":lua ToggleYaziBufDir()<CR>", { desc = "Toggle Yazi buf dir" })
-Map("n", "<leader>g", ":lua ToggleLazygit()<CR>", { desc = "Toggle Lazygit project root dir" })
+Map("n", "<leader>g", ":lua ToggleLazygit()<CR>", { desc = "Toggle Lazygit" })
 Map("n", "<leader>r", ":lua ToggleScooter()<CR>", { desc = "Toggle Scooter" })
 Map(
   "v",
@@ -143,7 +143,7 @@ Map("v", "x", '"_x', { desc = "Delete without yanking" })
 Map({ "n", "x" }, "c", function() return '"_c' end, { expr = true, desc = "Change without yanking" })
 
 local function is_ignored_terminal(bufname)
-  local ignore_list = { "lazygit", "yazi" }
+  local ignore_list = { "lazygit", "yazi", "jiratui", "scooter" }
   for _, term in ipairs(ignore_list) do
     if bufname:match(":" .. term) then return true end
   end

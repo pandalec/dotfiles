@@ -4,7 +4,7 @@ keybind = ctrl+shift+h=previous_tab
 keybind = ctrl+shift+l=next_tab
 keybind = performable:ctrl+c=copy_to_clipboard
 mouse-hide-while-typing = true
-mouse-scroll-multiplier = 1
+#mouse-scroll-multiplier = 1
 scrollback-limit = 52_428_800
-theme = dark:catppuccin-mocha,light:catppuccin-latte
+theme = dark:Catppuccin Mocha,light:Catppuccin Latte
 window-padding-balance = true

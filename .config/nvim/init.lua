@@ -15,6 +15,7 @@ require("plugins.conform")
 require("plugins.extui")
 require("plugins.gitsigns")
 require("plugins.gradle") -- depends on telescope & toggleterm
+require("plugins.jiratui") -- depends on telescope & toggleterm
 require("plugins.mini-surround")
 require("plugins.nvim-autopairs")
 require("plugins.nvim-cokeline") -- depends on plenary
