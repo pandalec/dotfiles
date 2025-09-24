@@ -1,4 +1,3 @@
--- Setup various plugins
 require("vim._extui").enable({
   enable = true,
   msg = {

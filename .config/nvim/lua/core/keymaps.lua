@@ -79,13 +79,13 @@ Map(
 -- Miscellaneous
 Map("n", "<leader>o", "o<Esc>", { desc = "New line below (normal mode)" })
 Map("n", "<leader>O", "O<Esc>", { desc = "New line above (normal mode)" })
-Map("n", "<leader>E", ":lua ToggleYazi()<CR>", { desc = "Toggle Yazi project dir" })
-Map("n", "<leader>e", ":lua ToggleYaziBufDir()<CR>", { desc = "Toggle Yazi buf dir" })
-Map("n", "<leader>g", ":lua ToggleLazygit()<CR>", { desc = "Toggle Lazygit" })
-Map("n", "<leader>r", ":lua ToggleScooter()<CR>", { desc = "Toggle Scooter" })
+Map("n", "<leader>ep", ":lua ToggleYazi()<CR>", { desc = "Toggle Yazi project dir" })
+Map("n", "<leader>ee", ":lua ToggleYaziBufDir()<CR>", { desc = "Toggle Yazi buf dir" })
+Map("n", "<leader>gg", ":lua ToggleLazygit()<CR>", { desc = "Toggle Lazygit" })
+Map("n", "<leader>rr", ":lua ToggleScooter()<CR>", { desc = "Toggle Scooter" })
 Map(
   "v",
-  "<leader>r",
+  "<leader>rr",
   '"ay<ESC><cmd>lua ToggleScooterSearchText(vim.fn.getreg("a"))<CR>',
   { desc = "Toggle Scooter with selection" }
 )
@@ -108,8 +108,8 @@ Map("n", "ss", function() require("substitute").line() end, { desc = "Substitute
 Map("x", "s", function() require("substitute").visual() end, { desc = "Substitute selection" })
 
 -- Terminal resizing
-Map("t", "<C-Down>", "<cmd>resize +2<CR>", { desc = "Increase window height" })
-Map("t", "<C-Up>", "<cmd>resize -2<CR>", { desc = "Decrease window height" })
+Map("t", "<C-Down>", "<cmd>resize -2<CR>", { desc = "Increase window height" })
+Map("t", "<C-Up>", "<cmd>resize +2<CR>", { desc = "Decrease window height" })
 Map("t", "<C-Left>", "<cmd>vertical resize +2<CR>", { desc = "Increase window width" })
 Map("t", "<C-Right>", "<cmd>vertical resize -2<CR>", { desc = "Decrease window width" })
 
@@ -163,8 +163,8 @@ function _G.SetTerminalKeymaps() -- Configure terminal keymaps
     Map("t", "<Esc>", "<Esc>", opts)
   else
     Map("t", "<Esc>", [[<C-\><C-n>]], opts)
+    Map("t", "<Esc><Esc>", [[<Cmd>hide<CR>]], opts)
   end
-  Map("t", "<Esc><Esc>", [[<Cmd>hide<CR>]], opts)
 end
 
 -- if you only want these mappings for toggle term use term://*toggleterm#* instead

@@ -16,6 +16,7 @@ local treesitter_langs = {
   "helm",
   "html",
   "hyprlang",
+  "javascript",
   "jinja",
   "jinja_inline",
   "json",
@@ -45,6 +46,7 @@ require("mason").setup()
 local lsp_servers = {
   "ansiblels",
   "bashls",
+  "biome",
   "cssls",
   "dockerls",
   "fish_lsp",
@@ -54,6 +56,7 @@ local lsp_servers = {
   "hyprls",
   "jsonls",
   "kotlin_language_server",
+  -- "kotlin_lsp",
   "lua_ls",
   "marksman",
   "phpactor",

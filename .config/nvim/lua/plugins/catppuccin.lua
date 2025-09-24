@@ -17,3 +17,8 @@ require("catppuccin").setup({
   end,
 })
 vim.cmd.colorscheme("catppuccin")
+
+-- Disable bold on selection
+vim.cmd([[
+  highlight Visual gui=NONE cterm=NONE
+]])

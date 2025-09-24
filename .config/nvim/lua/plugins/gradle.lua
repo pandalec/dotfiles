@@ -7,5 +7,5 @@ require("gradle").setup({
   keymaps = false,
   load_on_startup = true,
   disable_startup_notification = true,
-  floating_terminal_opts = FloatingTerminalOpts,
+  floating_terminal_opts = _G.FloatingTerminalOpts(),
 })

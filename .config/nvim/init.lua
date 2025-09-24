@@ -3,6 +3,7 @@ require("core.globals")
 require("core.keymaps")
 require("core.lsp")
 require("core.options")
+require("core.extui")
 
 require("plugins.telescope") -- depends on plenary
 require("plugins.toggleterm")
@@ -12,7 +13,6 @@ require("plugins.blink-cmp")
 require("plugins.catppuccin")
 require("plugins.comment")
 require("plugins.conform")
-require("plugins.extui")
 require("plugins.gitsigns")
 require("plugins.gradle") -- depends on telescope & toggleterm
 require("plugins.jiratui") -- depends on telescope & toggleterm

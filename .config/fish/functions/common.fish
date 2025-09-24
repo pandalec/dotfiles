@@ -53,7 +53,7 @@ function nfs
     set folder "$(fd --type d --hidden --full-path $HOME | fzf --preview 'ls {}' | awk '{$1=$1} 1')"
     set foldername "$(basename $folder)"
     cd "$folder"
-    echo -ne "\033]0;$foldername\007"
+    echo -ne "\033]0;  $foldername\007"
     if test -n "$folder"
         nvim
     end
