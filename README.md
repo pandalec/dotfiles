@@ -5,8 +5,6 @@
 Personal configuration files for my Arch Linux (btw) environment, optimized for a **consistent light/dark theme** across all tools and applications.  
 Dark mode uses **Catppuccin Mocha**, light mode uses **Catppuccin Latte**. Tools like **Yazi**, **Scooter**, and **Lazygit** are integrated with Neovim for a unified experience.
 
----
-
 ## Structure
 
 ### `.config/`
@@ -33,8 +31,6 @@ Dark mode uses **Catppuccin Mocha**, light mode uses **Catppuccin Latte**. Tools
 - `.ripgreprc`
 - `.stow-local-ignore`
 - `.gkr`
-
----
 
 ## Theme Switching
 
@@ -63,8 +59,6 @@ The main goal of these scripts is to maintain **consistent theming** across the 
 - Sets the wallpaper via `gsettings` (light or dark)
 
 Together, these scripts unify theming across terminal tools, GUI apps, and wallpapers.
-
----
 
 ## Usage
 
