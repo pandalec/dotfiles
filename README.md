@@ -65,9 +65,41 @@ Together, these scripts unify theming across terminal tools, GUI apps, and wallp
 Clone and apply dotfiles using GNU Stow:
 
 ```bash
-git clone https://github.com/<your-username>/.dotfiles.git ~/.dotfiles
+git clone https://github.com/pandalec/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 stow .
+```
+
+Install [paru](https://github.com/Morganamilo/paru) and install software
+
+```bash
+paru -S --needed \
+    bat \
+    eza \
+    fd \
+    fish \
+    fzf \
+    ghostty \
+    go-yq \
+    htop \
+    jiratui-git \
+    kotlin \
+    kubectl \
+    lazydocker \
+    lazygit \
+    less \
+    neofetch \
+    neovim-nightly-bin \
+    paru-bin \
+    repgrep \
+    rustup \
+    scooter \
+    starship \
+    stow \
+    ueberzugpp \
+    wget \
+    wl-clipboard \
+    yazi
 ```
 
 Switch themes manually:
