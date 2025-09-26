@@ -80,6 +80,7 @@ paru -S --needed \
     fish \
     fzf \
     ghostty \
+    git-delta \
     go-yq \
     htop \
     jiratui-git \
