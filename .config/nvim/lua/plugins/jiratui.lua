@@ -9,7 +9,7 @@ require("jiratui").setup({
     max_results = -1,
   },
   terminal = {
-    float_opts = _G.FloatingTerminalOpts(),
+    float_opts = FloatingTerminalOpts(),
   },
   git = { branch_template = "ticket/{key}_{slug}", commit_template = "{key}: {summary}" },
   debug = false,

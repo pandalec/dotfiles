@@ -25,6 +25,10 @@ set_bat() {
   sed -i "s/Catppuccin Mocha/${1}/g; s/Catppuccin Latte/${1}/g" "$HOME/.dotfiles/.config/bat/config"
 }
 
+set_gitconfig() {
+  sed -i "s/catppuccin-mocha/${1}/g; s/catppuccin-latte/${1}/g" "$HOME/.dotfiles/.gitconfig"
+}
+
 set_jiratui() {
   # paru -S jiratui-git
   if [ -f "${HOME}/.config/jiratui/config.yaml" ]; then
@@ -56,6 +60,7 @@ set_gsettings() {
 set_dark() {
   set_bat "Catppuccin Mocha" &
   set_jiratui "catppuccin-mocha" &
+  set_gitconfig "catppuccin-mocha" &
   set_scooter "Catppuccin Mocha" &
   set_lazygit "dark" &
   set_fish "Catppuccin Mocha" &
@@ -66,6 +71,7 @@ set_dark() {
 set_light() {
   set_bat "Catppuccin Latte" &
   set_jiratui "catppuccin-latte" &
+  set_gitconfig "catppuccin-latte" &
   set_scooter "Catppuccin Latte" &
   set_lazygit "light" &
   set_fish "Catppuccin Latte" &

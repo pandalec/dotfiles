@@ -1,0 +1,53 @@
+[include]
+  path = ~/.user.gitconfig
+
+[credential]
+  helper = /usr/lib/git-core/git-credential-libsecret
+
+[pack]
+  windowMemory = 100m
+  SizeLimit = 100m
+  threads = 8
+  window = 0
+  deltaCacheSize = 2047m
+  packSizeLimit = 2047m
+  windowMemory = 2047m
+
+[core]
+  compression = 0
+  packedGitLimit = 512m
+  packedGitWindowSize = 512m
+  pager = delta
+
+[commit]
+  gpgsign = true
+
+[pull]
+  rebase = true
+
+; [url "git@github.com:"]
+;   insteadOf = https://github.com
+;   pushInsteadOf = https://github.com
+; [http]
+;   version = HTTP/1.1
+
+[filter "lfs"]
+  process = git-lfs filter-process
+  required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+
+[interactive]
+  diffFilter = delta --color-only
+
+[include]
+  path = ~/.config/delta/themes/catppuccin.gitconfig
+
+[delta]
+  line-numbers = true
+  navigate = true
+  pager = never
+  features = catppuccin-mocha
+
+[merge]
+  conflictStyle = zdiff3

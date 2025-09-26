@@ -60,7 +60,7 @@ Map("n", "<leader>tt", ":lua ToggleFloatingTerminal()<CR>", { desc = "Toggle flo
 Map(
   "v",
   "<leader>tt",
-  '"ay<ESC>:lua ToggleHorizontalTerminal()<CR><C-\\><C-n>"ap i<CR>',
+  '"ay<ESC>:lua ToggleFloatingTerminal()<CR><C-\\><C-n>"ap i<CR>',
   { desc = "Toggle floating terminal with selection" }
 )
 Map(
@@ -89,9 +89,9 @@ Map(
   '"ay<ESC><cmd>lua ToggleScooterSearchText(vim.fn.getreg("a"))<CR>',
   { desc = "Toggle Scooter with selection" }
 )
-Map("n", "<leader>GG", ":GradlePickTasks<CR>", { desc = "Gradle pick tasks" })
-Map("n", "<leader>GR", ":GradleRefreshTasks<CR>", { desc = "Gradle refresh tasks" })
-Map("n", "<leader>GT", ":GradleToggleTerminal<CR>", { desc = "Gradle toggle terminal" })
+Map("n", "<leader>Gg", ":GradlePickTasks<CR>", { desc = "Gradle pick tasks" })
+Map("n", "<leader>Gr", ":GradleRefreshTasks<CR>", { desc = "Gradle refresh tasks" })
+Map("n", "<leader>Gt", ":GradleToggleTerminal<CR>", { desc = "Gradle toggle terminal" })
 Map("n", "<leader>?", function() require("which-key").show({ global = false }) end, { desc = "Local Keymaps" })
 
 -- Code actions

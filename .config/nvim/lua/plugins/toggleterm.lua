@@ -13,6 +13,7 @@ require("toggleterm").setup({
     end
   end,
   start_in_insert = true,
+  persist_mode = false,
   hidden = true,
   highlights = {
     Normal = { link = "Normal" },
@@ -58,7 +59,7 @@ end
 local Lazygit = Terminal:new({ -- lazygit terminal
   cmd = "lazygit",
   direction = "float",
-  float_opts = _G.FloatingTerminalOpts(),
+  float_opts = FloatingTerminalOpts(),
   name = "lazygit",
   on_close = function() vim.cmd("checktime") end,
 })
@@ -77,7 +78,7 @@ _G.ToggleYazi = function()
   Terminal:new({
     cmd = "yazi",
     direction = "float",
-    float_opts = _G.FloatingTerminalOpts(),
+    float_opts = FloatingTerminalOpts(),
     close_on_exit = true,
     on_close = function(term)
       if term.job_id and term.job_id > 0 then
@@ -91,7 +92,7 @@ _G.ToggleYaziBufDir = function()
   Terminal:new({
     cmd = "yazi",
     direction = "float",
-    float_opts = _G.FloatingTerminalOpts(),
+    float_opts = FloatingTerminalOpts(),
     dir = (vim.fn.expand("%:p:h") ~= "" and vim.fn.expand("%:p:h") or vim.loop.cwd()),
     close_on_exit = true,
     on_close = function(term)
@@ -107,7 +108,7 @@ local ScooterParams = '--hidden --fixed-strings --files-to-exclude="' .. table.c
 local Scooter = Terminal:new({ -- scooter terminal
   cmd = "scooter " .. ScooterParams,
   direction = "float",
-  float_opts = _G.FloatingTerminalOpts(),
+  float_opts = FloatingTerminalOpts(),
   name = "scooter",
   on_close = function() vim.cmd("checktime") end,
 })
@@ -125,7 +126,7 @@ end
 
 local FloatingTerminal = Terminal:new({ -- floating terminal
   direction = "float",
-  float_opts = _G.FloatingTerminalOpts(),
+  float_opts = FloatingTerminalOpts(),
   name = "floating_terminal",
   auto_scroll = false,
   env = { FISH_ENABLE_AUTOLOG = "1" },

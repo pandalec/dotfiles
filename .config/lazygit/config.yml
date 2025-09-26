@@ -1,11 +1,22 @@
 ---
-os:
-  edit: 'nvim --server $NVIM --remote-send ''<cmd>close<CR><cmd>lua OpenFromExternal("e", {{filename}})<CR>'''
-  editAtLine: 'nvim --server $NVIM --remote-send ''<cmd>close<CR><cmd>lua OpenFromExternal("e", {{filename}}, {{line}})<CR>'''
+git:
+  autoForwardBranches: allBranches
+  autoFetch: true
+  commitPrefix:
+    - pattern: "^\\w+/([^_]+).*"
+      replace: "$1: "
+  paging:
+    colorArg: always
+    pager: delta
 gui:
   skipDiscardChangeWarning: true
   nerdFontsVersion: "3"
   showFileIcons: false
+  expandFocusedSidePanel: true
+  sidePanelWidth: 0.25
+  showRandomTip: false
+  showCommandLog: false
+  # mainPanelSplitMode: flexible
   theme:
     activeBorderColor:
       - "#89b4fa"
@@ -29,6 +40,7 @@ gui:
   authorColors:
     "*": "#b4befe"
 notARepository: quit
+os:
+  edit: 'nvim --server $NVIM --remote-send ''<cmd>close<CR><cmd>lua OpenFromExternal("e", {{filename}})<CR>'''
+  editAtLine: 'nvim --server $NVIM --remote-send ''<cmd>close<CR><cmd>lua OpenFromExternal("e", {{filename}}, {{line}})<CR>'''
 promptToReturnFromSubprocess: false
-git:
-  autoForwardBranches: allBranches

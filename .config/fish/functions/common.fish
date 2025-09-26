@@ -47,7 +47,7 @@ if type -q kubectl
 end
 
 # @fish-lsp-disable-next-line
-function nfs
+function n
     set current_path (pwd)
     cd $HOME
     set folder "$(fd --type d --hidden --full-path $HOME | fzf --preview 'ls {}' | awk '{$1=$1} 1')"
