@@ -13,21 +13,22 @@ wk.setup({
   icons = {
     -- group = "+ ",
     rules = {
-      { pattern = "code", icon = "", color = "mauve" },
-      { pattern = "buffer", icon = "", color = "teal" },
-      { pattern = "keymap", icon = "", color = "blue" },
-      { pattern = "above", icon = "", color = "teal" },
-      { pattern = "below", icon = "", color = "teal" },
-      { pattern = "dir", icon = "", color = "peach" },
-      { pattern = "explorer", icon = "", color = "lavender" },
-      { pattern = "terminal", icon = "", color = "sapphire" },
-      { pattern = "gradle", icon = "", color = "maroon" },
-      { pattern = "find", icon = "", color = "rosewater" },
+      { pattern = "code", icon = "", color = "blue" },
+      { pattern = "buffer", icon = "", color = "cyan" },
+      { pattern = "keymap", icon = "", color = "azure" },
+      { pattern = "above", icon = "", color = "grey" },
+      { pattern = "below", icon = "", color = "grey" },
+      { pattern = "dir", icon = "", color = "orange" },
+      { pattern = "explorer", icon = "", color = "orange" },
+      { pattern = "nautilus", icon = "", color = "orange" },
+      { pattern = "terminal", icon = "", color = "red" },
+      { pattern = "gradle", icon = "", color = "green" },
+      { pattern = "find", icon = "", color = "yellow" },
       { pattern = "git", icon = "", color = "red" },
       { pattern = "jira", icon = "", color = "blue" },
-      { pattern = "replace", icon = "", color = "green" },
-      { pattern = "surround", icon = "", color = "sky" },
+      { pattern = "surround", icon = "", color = "cyan" },
       { pattern = "scooter", icon = "󱖽", color = "yellow" },
+      { pattern = "update", icon = "", color = "purple" },
     },
   },
 })
@@ -40,16 +41,18 @@ wk.add({
   { "<leader>e", group = "File Explorer" },
   { "<leader>g", group = "Lazygit" },
   { "<leader>j", group = "Jira" },
+  { "<leader>n", group = "Nautilus" },
   { "<leader>r", group = "Replace ... with Scooter" },
   { "<leader>t", group = "Terminal with selection", mode = { "v" } },
   { "<leader>t", group = "Terminal", mode = { "n" } },
+  { "<leader>u", group = "Update ..." },
 })
 
 -- Reserve unmapped <leader>a..z as <nop> and hide them in which-key
 -- local modes = { "n", "v", "x", "o" }
 local modes = { "n", "v" }
 local hidden = {}
-local alphabet = "abdhiklmnopqsuvwxyzABCDEFHIJKLMNOPQRSTUVWXYZ"
+local alphabet = "abdhiklmopqsvwxyzABCDEFHIJKLMOPQRSTUVWXYZ"
 local codes = { string.byte(alphabet, 1, #alphabet) }
 
 local function has_map(lhs, mode)

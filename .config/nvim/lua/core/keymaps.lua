@@ -79,10 +79,10 @@ Map(
 -- Miscellaneous
 Map("n", "<leader>o", "o<Esc>", { desc = "New line below (normal mode)" })
 Map("n", "<leader>O", "O<Esc>", { desc = "New line above (normal mode)" })
-Map("n", "<leader>ep", ":lua ToggleYazi()<CR>", { desc = "Toggle Yazi project dir" })
-Map("n", "<leader>ee", ":lua ToggleYaziBufDir()<CR>", { desc = "Toggle Yazi buf dir" })
-Map("n", "<leader>gg", ":lua ToggleLazygit()<CR>", { desc = "Toggle Lazygit" })
-Map("n", "<leader>rr", ":lua ToggleScooter()<CR>", { desc = "Toggle Scooter" })
+Map("n", "<leader>ep", ":lua ToggleYazi()<CR>", { desc = "Open Yazi in project root" })
+Map("n", "<leader>ee", ":lua ToggleYaziBufDir()<CR>", { desc = "Open Yazi in buffer directory" })
+Map("n", "<leader>gg", ":lua ToggleLazygit()<CR>", { desc = "Open Lazygit" })
+Map("n", "<leader>rr", ":lua ToggleScooter()<CR>", { desc = "Open Scooter" })
 Map(
   "v",
   "<leader>rr",
@@ -93,6 +93,28 @@ Map("n", "<leader>Gg", ":GradlePickTasks<CR>", { desc = "Gradle pick tasks" })
 Map("n", "<leader>Gr", ":GradleRefreshTasks<CR>", { desc = "Gradle refresh tasks" })
 Map("n", "<leader>Gt", ":GradleToggleTerminal<CR>", { desc = "Gradle toggle terminal" })
 Map("n", "<leader>?", function() require("which-key").show({ global = false }) end, { desc = "Local Keymaps" })
+Map(
+  "n",
+  "<leader>nn",
+  function() vim.fn.jobstart({ "nautilus", vim.fn.expand("%:p:h") }, { detach = true }) end,
+  { desc = "Open Nautilus in buffer directory" }
+)
+Map(
+  "n",
+  "<leader>np",
+  function() vim.fn.jobstart({ "nautilus", vim.fn.getcwd() }, { detach = true }) end,
+  { desc = "Open Nautilus in project root" }
+)
+Map("n", "<leader>ua", function()
+  vim.cmd("TSUpdate")
+  vim.cmd("MasonToolsUpdateSync")
+  vim.cmd("MasonUpdate")
+  vim.cmd("lua vim.pack.update()")
+end, { desc = "Update all" })
+Map("n", "<leader>ut", function() vim.cmd("TSUpdate") end, { desc = "Update Treesitter" })
+Map("n", "<leader>um", function() vim.cmd("MasonUpdate") end, { desc = "Update Mason" })
+Map("n", "<leader>uo", function() vim.cmd("MasonToolsUpdateSync") end, { desc = "Update Mason Tools" })
+Map("n", "<leader>up", function() vim.cmd("lua vim.pack.update()") end, { desc = "Update Vim packages" })
 
 -- Code actions
 Map("n", "<leader>cd", ":lua vim.lsp.buf.definition()<CR>", { desc = "Go to definition" })
