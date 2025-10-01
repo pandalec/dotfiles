@@ -47,16 +47,61 @@ if type -q kubectl
 end
 
 # @fish-lsp-disable-next-line
+function color_title
+    # Argument: project/folder name
+    set -l title $argv[1]
+
+    # Define the colored emojis
+    set -l colors 🟥 🟧 🟨 🟩 🟦 🟪 🟫 ⬛ ⬜ 🔴 🟠 🟡 🟢 🔵 🟣 🟤 ⚫ ⚪ 🔷 🔶 🔹 🔸
+
+    # Normalize to lowercase for consistent hashing
+    set -l title_lc (string lower $title)
+
+    # Simple deterministic hash: sum of character codes
+    set -l sum 0
+    for c in (string split '' $title_lc)
+        set -l code (printf "%d" "'$c")
+        set sum (math "$sum + $code")
+    end
+
+    # Count of colors
+    set -l num_colors (count $colors)
+
+    # Pick color index (1-based)
+    set -l idx (math "$sum % $num_colors + 1")
+
+    # Return colored title
+    echo "$colors[$idx] $title"
+end
+
+# @fish-lsp-disable-next-line
 function n
     set current_path (pwd)
     cd $HOME
-    set folder "$(fd --type d --hidden --full-path $HOME | fzf --preview 'ls {}' | awk '{$1=$1} 1')"
-    set foldername "$(basename $folder)"
-    cd "$folder"
-    echo -ne "\033]0;  $foldername\007"
-    if test -n "$folder"
+
+    # Allow multi-selection in fzf
+    set folders (fd --type d --hidden --full-path $HOME | fzf --multi --preview 'ls {}')
+
+    if test -n "$folders"
+        set first_folder $folders[1]
+        set first_foldername (basename $first_folder)
+        set first_foldername_colored (color_title $first_foldername)
+
+        # Launch ghostty for additional selections in background
+        for folder in $folders[2..-1]
+            set foldername (basename $folder)
+            set foldername_colored (color_title $foldername)
+            ghostty --title="$foldername_colored" --working-directory="$folder" -e nvim >/dev/null 2>&1 &
+            disown
+        end
+
+        # Now run the first one inline in this shell
+        cd "$first_folder"
+        echo -ne "\033]0;$first_foldername_colored\007"
         nvim
+        cd $HOME
     end
+
     cd $current_path
 end
 

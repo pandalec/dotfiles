@@ -82,6 +82,13 @@ Map("n", "<leader>O", "O<Esc>", { desc = "New line above (normal mode)" })
 Map("n", "<leader>ep", ":lua ToggleYazi()<CR>", { desc = "Open Yazi in project root" })
 Map("n", "<leader>ee", ":lua ToggleYaziBufDir()<CR>", { desc = "Open Yazi in buffer directory" })
 Map("n", "<leader>gg", ":lua ToggleLazygit()<CR>", { desc = "Open Lazygit" })
+Map(
+  "n",
+  "<leader>gb",
+  function() require("plugins.gitea").open_pr() end,
+  { desc = "Open Gitea PR from current branch" }
+)
+
 Map("n", "<leader>rr", ":lua ToggleScooter()<CR>", { desc = "Open Scooter" })
 Map(
   "v",

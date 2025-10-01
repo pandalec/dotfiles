@@ -1,5 +1,5 @@
 vim.pack.add({
-  { src = "https://github.com/Saghen/blink.cmp", version = "v1.6.0" },
+  { src = "https://github.com/Saghen/blink.cmp", version = "v1.7.0" },
 })
 
 -- Setup blink.cmp auto completion

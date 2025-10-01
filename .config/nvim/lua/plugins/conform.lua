@@ -8,6 +8,7 @@ require("conform").setup({
   formatters_by_ft = {
     ansible = { "prettier", "codespell" },
     css = { "prettier", "codespell" },
+    dockerfile = { "dockerfmt", "codespell" },
     fish = { "fish_indent", "codespell" },
     html = { "prettier", "codespell" },
     groovy = { "npm-groovy-lint", "codespell" },

@@ -72,6 +72,7 @@ local extra_tools = {
   "ansible-lint",
   "black",
   "codespell",
+  -- "hadolint", -- dockerfile
   "kotlin-debug-adapter",
   "ktlint",
   "nginx-config-formatter",
