@@ -23,7 +23,7 @@ require("conform").setup({
     terraform = { "terraform_fmt", "codespell" },
     tex = {},
     text = {},
-    typescript = { "prettier", "codespell" },
+    typescript = { "biome", "codespell" },
     yaml = { "prettier", "codespell" },
   },
 })

@@ -30,6 +30,7 @@ local treesitter_langs = {
   "rust",
   "terraform",
   "toml",
+  "typescript",
   "yaml",
 }
 
