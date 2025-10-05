@@ -97,6 +97,7 @@ paru -S --needed \
     scooter \
     starship \
     stow \
+    ttf-jetbrains-mono-nerd \
     ueberzugpp \
     wget \
     wl-clipboard \
