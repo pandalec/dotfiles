@@ -18,6 +18,7 @@ require("conform").setup({
     lua = { "stylua", "codespell" },
     markdown = { "prettier", "pymarkdownlnt" },
     php = { "php_cs_fixer" },
+    python = { "black" },
     rust = { "rustfmt", "codespell" },
     sh = { "shfmt", "codespell" },
     terraform = { "terraform_fmt", "codespell" },

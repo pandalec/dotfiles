@@ -6,3 +6,8 @@ command = "nvim --server $NVIM --remote-send '<cmd>close<cr><cmd>lua OpenFromExt
 
 [search]
 disable_prepopulated_fields = false
+
+[keys.general]
+quit = "C-q"
+reset = "C-r"
+show_help_menu = "C-?"

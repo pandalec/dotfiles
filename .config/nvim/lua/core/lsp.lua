@@ -36,10 +36,17 @@ local treesitter_langs = {
 
 require("nvim-treesitter.configs").setup({
   ensure_installed = treesitter_langs,
-  sync_install = true,
-  auto_install = true,
+  sync_install = false,
+  -- auto_install = true,
   highlight = { enable = true, additional_vim_regex_highlighting = false },
 })
+
+-- vim.treesitter.highlighter.disable = function(lang, buf)
+--   local max_filesize = 500 * 1024 -- 500 KB
+--   local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+--   if ok and stats and stats.size > max_filesize then return true end
+--   return false
+-- end
 
 -- Mason setup
 require("mason").setup()
@@ -66,6 +73,7 @@ local lsp_servers = {
   "systemd_ls",
   "taplo",
   "terraformls",
+  "ts_ls",
   "yamlls",
 }
 
@@ -122,8 +130,11 @@ vim.filetype.add({
 
 -- LSP specific settings
 vim.diagnostic.config({
-  virtual_text = true,
+  -- virtual_text = true,
+  virtual_text = false, -- only show in floating windows
+  signs = true,
   float = { border = "rounded", source = "always" },
-  update_in_insert = true,
+  -- update_in_insert = true,
+  update_in_insert = false,
   severity_sort = true,
 })

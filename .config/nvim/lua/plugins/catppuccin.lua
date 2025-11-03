@@ -4,7 +4,7 @@ vim.pack.add({
 
 -- Setup catpuccin
 require("catppuccin").setup({
-  auto_integrations = true,
+  -- auto_integrations = true,
   transparent_background = true,
   flavour = "auto",
   background = { light = "latte", dark = "mocha" },

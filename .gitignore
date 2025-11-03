@@ -5,3 +5,4 @@
 .config/yazi/theme.toml-*
 .tmp
 jiratui.log
+.config/nvim/nvim-pack-lock.json

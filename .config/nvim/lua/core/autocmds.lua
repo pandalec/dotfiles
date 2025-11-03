@@ -25,3 +25,10 @@ vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
     end
   end,
 })
+
+-- Avoid excessive redraws for large buffers
+vim.api.nvim_create_autocmd("WinScrolled", {
+  callback = function()
+    vim.cmd("redraw") -- minimal redraw
+  end,
+})
